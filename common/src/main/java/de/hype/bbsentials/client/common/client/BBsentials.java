@@ -66,8 +66,6 @@ public class BBsentials {
     public static HypixelModAPICore hpModAPICore;
     public static DummyDataStorage dummyDataStorage = new DummyDataStorage();
     public static BBDataStorage dataStorage;
-    public static Map<String, String> itemIds = new HashMap<>();
-    private static boolean initialised = false;
     private static volatile ScheduledFuture<?> futureServerJoin;
     private static volatile boolean futureServerJoinRunning;
 
@@ -160,7 +158,7 @@ public class BBsentials {
         );
         debugThread.start();
         debugThread.setName("Debug Thread");
-        if (GeneralConfig.isBingoTime() || bbServerConfig.overrideBingoTime) {
+        if (generalConfig.getBingoCard().isBingoTime() || bbServerConfig.overrideBingoTime) {
             connectToBBserver();
         }
         try {
@@ -190,17 +188,17 @@ public class BBsentials {
                 }
             }
         }, true);
-        if (discordConfig.useRichPresence) {
-            try {
-                dcGameSDK = new GameSDKManager();
-                if (discordConfig.useRichPresence) {
-                    dcGameSDK.updateActivity();
-                    ServerSwitchTask.onServerJoinTask(() -> dcGameSDK.updateActivity(), true);
-                }
-            } catch (Exception e) {
-                Chat.sendPrivateMessageToSelfError("Could not set Discord Rich Presence");
-            }
-        }
+//        if (discordConfig.useRichPresence) {
+//            try {
+//                dcGameSDK = new GameSDKManager();
+//                if (discordConfig.useRichPresence) {
+//                    dcGameSDK.updateActivity();
+//                    ServerSwitchTask.onServerJoinTask(() -> dcGameSDK.updateActivity(), true);
+//                }
+//            } catch (Exception e) {
+//                Chat.sendPrivateMessageToSelfError("Could not set Discord Rich Presence");
+//            }
+//        }
         if (funConfig.lowPlayTimeHelpers) {
             ServerSwitchTask.onServerLeaveTask(() -> {
                 BBsentials.funConfig.lowPlaytimeHelperJoinDate = Instant.now();
