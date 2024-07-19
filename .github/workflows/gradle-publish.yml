@@ -1,22 +1,8 @@
 name: Build Beta
 
 on:
-  merge_group:
   push:
-    branches:
-      - master
-    paths-ignore:
-      - 'src/main/resources/assets/skyblocker/lang/**'
-      - 'CHANGELOG.md'
-      - 'FEATURES.md'
-      - 'README.md'
-  pull_request:
-    paths-ignore:
-      - 'src/main/resources/assets/skyblocker/lang/**'
-      - 'CHANGELOG.md'
-      - 'FEATURES.md'
-      - 'README.md'
-
+  
 jobs:
   # This workflow contains a single job called "build"
   build:
