@@ -8,6 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import de.hype.bbsentials.client.common.chat.Chat;
 import de.hype.bbsentials.client.common.chat.Message;
 import de.hype.bbsentials.client.common.client.BBsentials;
+import de.hype.bbsentials.client.common.client.CrystalMetalDetectorSolver;
 import de.hype.bbsentials.client.common.client.objects.ServerSwitchTask;
 import de.hype.bbsentials.client.common.communication.BBsentialConnection;
 import de.hype.bbsentials.client.common.config.ConfigManager;
@@ -32,6 +33,7 @@ import de.hype.bbsentials.fabric.screens.WaypointsConfigScreen;
 import de.hype.bbsentials.fabric.tutorial.Tutorial;
 import de.hype.bbsentials.fabric.tutorial.TutorialManager;
 import de.hype.bbsentials.fabric.tutorial.nodes.ObtainItemNode;
+import de.hype.bbsentials.shared.constants.HypixelInstanceIsland;
 import de.hype.bbsentials.shared.objects.Position;
 import de.hype.bbsentials.shared.objects.RenderInformation;
 import dev.xpple.clientarguments.arguments.CBlockPosArgument;
@@ -134,6 +136,50 @@ public class ModInitialiser implements ClientModInitializer {
                                 return 1;
                             })
                     ));
+            dispatcher.replaceRegister(literal("viewstash")
+                    .then(
+                            argument("type", StringArgumentType.greedyString())
+                                    .suggests((context, suggestionsBuilder) -> {
+                                        suggestionsBuilder.suggest("material");
+                                        suggestionsBuilder.suggest("item");
+                                        return suggestionsBuilder.buildFuture();
+                                    })
+                                    .executes((context -> {
+                                        sender.addHiddenSendTask("/viewstash " + StringArgumentType.getString(context, "type"), 0);
+                                        return 1;
+                                    }
+                                    ))
+                    )
+            );
+            dispatcher.replaceRegister(literal("viewstash")
+                    .then(
+                            argument("type", StringArgumentType.greedyString())
+                                    .suggests((context, suggestionsBuilder) -> {
+                                        suggestionsBuilder.suggest("material");
+                                        suggestionsBuilder.suggest("item");
+                                        return suggestionsBuilder.buildFuture();
+                                    })
+                                    .executes((context -> {
+                                        sender.addHiddenSendTask("/viewstash " + StringArgumentType.getString(context, "type"), 0);
+                                        return 1;
+                                    }
+                                    ))
+                    )
+            );
+            dispatcher.replaceRegister(literal("joininstance")
+                    .then(
+                            argument("type", StringArgumentType.greedyString())
+                                    .suggests((context, suggestionsBuilder) -> {
+                                        CommandSource.suggestMatching(Arrays.stream(HypixelInstanceIsland.values()).map(HypixelInstanceIsland::toString).toList(),suggestionsBuilder);
+                                        return suggestionsBuilder.buildFuture();
+                                    })
+                                    .executes((context -> {
+                                        sender.addHiddenSendTask("/joininstance " + StringArgumentType.getString(context, "type"), 0);
+                                        return 1;
+                                    }
+                                    ))
+                    )
+            );
             dispatcher.replaceRegister(literal("viewrecipe")
                     .then(argument("itemid", SkyblockRecipeArgumentType.itemidtype())
                             .executes(context -> {
@@ -632,8 +678,9 @@ public class ModInitialiser implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+
         System.out.println("BBsentials : onInit called");
-        EnvironmentCore core = EnvironmentCore.fabric(new Utils(), new MCEvents(), new FabricChat(), new Commands(), new Options(), new DebugThread(), new FabricTextUtils());
+        EnvironmentCore core = EnvironmentCore.fabric(new Utils(), new MCEvents(), new FabricChat(), new Commands(), new Options(), new DebugThread(), new FabricTextUtils(), new FabricWorldUtils());
         codes = new NumPadCodes();
         BBsentials.init();
         tutorialManager = new TutorialManager();
@@ -673,6 +720,7 @@ public class ModInitialiser implements ClientModInitializer {
             if (EnvironmentCore.utils.getUsername().toLowerCase().equals("p0is")) {
                 funConfig.hub17To29Troll = true;
             }
+            CrystalMetalDetectorSolver.initWorld();
         });
     }
 
