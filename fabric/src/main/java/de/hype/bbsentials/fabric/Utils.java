@@ -4,7 +4,6 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import de.hype.bbsentials.client.common.chat.Chat;
 import de.hype.bbsentials.client.common.client.BBsentials;
-import de.hype.bbsentials.client.common.client.CrystalMetalDetectorSolver;
 import de.hype.bbsentials.client.common.client.updatelisteners.ChChestUpdateListener;
 import de.hype.bbsentials.client.common.client.updatelisteners.UpdateListenerManager;
 import de.hype.bbsentials.client.common.mclibraries.EnvironmentCore;
@@ -18,6 +17,7 @@ import de.hype.bbsentials.fabric.tutorial.TutorialManager;
 import de.hype.bbsentials.fabric.tutorial.nodes.CoordinateNode;
 import de.hype.bbsentials.shared.constants.ChChestItem;
 import de.hype.bbsentials.shared.constants.Islands;
+import de.hype.bbsentials.shared.constants.VanillaItems;
 import de.hype.bbsentials.shared.objects.ChChestData;
 import de.hype.bbsentials.shared.objects.Position;
 import de.hype.bbsentials.shared.objects.minions.Minions;
@@ -29,7 +29,9 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
+import net.minecraft.advancement.AdvancementFrame;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -38,8 +40,10 @@ import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.*;
 import net.minecraft.client.option.ServerList;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.ScreenshotRecorder;
@@ -50,7 +54,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardEntry;
@@ -58,6 +61,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -104,17 +108,16 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
         BlockPos playerPos = MinecraftClient.getInstance().player.getBlockPos();
         List<Waypoints> waypoints = Waypoints.waypoints.values().stream().filter((waypoint) -> waypoint.visible).toList();
 
-        if (!waypoints.isEmpty() || ModInitialiser.tutorialManager.current != null || !CrystalMetalDetectorSolver.possibleBlocks.isEmpty()) {
+        if (!waypoints.isEmpty() || ModInitialiser.tutorialManager.current != null) {
             try {
                 RenderInWorldContext.Companion.renderInWorld(event, (it) -> {
-                    Color defaultColor = BBsentials.visualConfig.waypointDefaultColor;
+                    Color color = BBsentials.visualConfig.waypointDefaultColor;
+                    color = new Color(color.getRed() / 16, color.getGreen() / 16, color.getBlue() / 16, 50);
                     if (ModInitialiser.tutorialManager.current != null) {
                         List<CoordinateNode> nodes = ModInitialiser.tutorialManager.current.getCoordinateNodesToRender();
                         for (int i = 0; i < nodes.size(); i++) {
                             BlockPos pos = new BlockPos(nodes.get(i).getPositionBlockPos());
-                            it.color(defaultColor.getRed(), defaultColor.getGreen(), defaultColor.getBlue(), 0.2f);
-                            it.block(pos);
-                            it.color(defaultColor.getRed(), defaultColor.getGreen(), defaultColor.getBlue(), 1f);
+                            it.block(pos, color);
                             if (i == 0 && !ModInitialiser.tutorialManager.recording) {
                                 it.tracer(pos.toCenterPos(), 3f);
                             }
@@ -124,24 +127,16 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
                     for (Waypoints waypoint : waypoints) {
                         BlockPos pos = new BlockPos(waypoint.position.x, waypoint.position.y, waypoint.position.z);
                         if (playerPos.toCenterPos().distanceTo(pos.toCenterPos()) >= waypoint.renderDistance) continue;
-                        it.color(waypoint.color.getRed(), waypoint.color.getGreen(), waypoint.color.getBlue(), 0.2f);
-                        it.block(pos);
-                        it.color(waypoint.color.getRed(), waypoint.color.getGreen(), waypoint.color.getBlue(), 1f);
-                        it.waypoint(pos, FabricTextUtils.jsonToText(waypoint.jsonToRenderText));
+                        color = waypoint.color;
+                        color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 50);
+                        it.block(pos, color);
+                        it.waypoint(pos, color, FabricTextUtils.jsonToText(waypoint.jsonToRenderText));
                         if (waypoint.doTracer) {
                             Vector3f cameraForward = new Vector3f(0f, 0f, 1f).rotate(event.camera.getRotation());
                             it.line(new Vec3d[]{event.camera.getPos().add(new Vec3d(cameraForward)), pos.toCenterPos()}, 3f);
                         }
                         it.doWaypointIcon(pos.toCenterPos(), waypoint.render, 25, 25);
 
-                    }
-                    for (Position possibleBlock : CrystalMetalDetectorSolver.possibleBlocks) {
-                        BlockPos pos = new BlockPos(possibleBlock.x, possibleBlock.y, possibleBlock.z);
-                        if (playerPos.toCenterPos().distanceTo(pos.toCenterPos()) >= 300) continue;
-                        it.color(Color.ORANGE, 0.2f);
-                        it.block(pos);
-                        it.color(Color.ORANGE, 1f);
-                        it.waypoint(pos, Text.literal("Treasure"));
                     }
                     return Unit.INSTANCE;
                 });
@@ -155,9 +150,7 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
                     RouteNode node = BBsentials.temporaryConfig.route.getCurrentNode();
                     BlockPos pos = new BlockPos(node.coords.x, node.coords.y, node.coords.z);
                     BBsentials.temporaryConfig.route.doNextNodeCheck(playerPos.toCenterPos().distanceTo(pos.toCenterPos()));
-                    it.color(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), 0.2f);
-                    it.block(pos);
-                    it.color(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), 1f);
+                    it.block(pos, node.color);
                     it.waypoint(pos, Text.of(node.name));
 
                     return Unit.INSTANCE;
@@ -166,48 +159,6 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
         } catch (Exception ignored) {
         }
 //        WorldRenderLastEvent.Companion.publish(event);
-    }
-
-    public static void doBingoRankManipulations(ItemStack stack) {
-//        try {
-//            NbtCompound nbt = stack.getOrCreateNbt();
-//            NbtCompound displayTag = nbt.getCompound("display");
-//
-//            if (displayTag.contains("Lore")) {
-//
-//                NbtList loreList = displayTag.getList("Lore", NbtList.STRING_TYPE);
-//                for (int i = 0; i < loreList.size(); i++) {
-//                    String lineJson = loreList.getString(i);
-//                    String lineContentString = Text.Serialization.fromLenientJson(lineJson).getString();
-//                    if (lineContentString.matches("  #(\\d+) contributor")) {
-//                        loreList.remove(i);
-//                    }
-//                    if (lineContentString.matches("  Top \\d+(\\.\\d+)%$") || lineContentString.matches("  Top \\d+%$")) {
-//                        loreList.set(i, NbtString.of(Text.Serialization.toJsonString(Text.of("  §8 Top §a0%"))));
-//                        loreList.add(i + 1, NbtString.of(Text.Serialization.toJsonString(Text.of("  §6§l#1§r §fcontributor"))));
-//                        i += 1;
-//                        continue;
-//                    }
-//                    if (lineContentString.contains("Playtime: ")){
-////                        loreList.set(i, NbtString.of(Text.Serialization.toJsonString(Text.of("§7Playtime: §a0m 10s"))));
-//                        continue;
-//                    }
-//                    if (lineContentString.contains("Contribution: ")){
-//                        loreList.set(i, NbtString.of(Text.Serialization.toJsonString(Text.of("§7Contribution: §a2,147,483,647 experience"))));
-//                        continue;
-//                    }
-//
-//                }
-//                if (!loreList.get(loreList.size() - 1).asString().contains("This is faked!")) {
-////                    loreList.add(NbtString.of(Text.Serialization.toJsonString(Text.of("§4This is faked!"))));
-//                }
-//
-//                displayTag.put("Lore", loreList);
-//                stack.getNbt().put("display", displayTag);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     public boolean isWindowFocused() {
@@ -274,7 +225,8 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
                 inMinionData = true;
                 slots = Integer.parseInt(string.split("/")[1].replaceAll("\\D+", ""));
             }
-            else if (inMinionData && string.trim().isEmpty()) return new MinionDataResponse(minions, slots);
+            else
+                if (inMinionData && string.trim().isEmpty()) return new MinionDataResponse(minions, slots);
             if (!(inMinionData)) continue;
             try {
                 String[] arguments = string.split(" ");
@@ -415,11 +367,12 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
                         leechPotions++;
                     }
                 }
-                else if (effect == StatusEffects.JUMP_BOOST && amplifier >= 5) {
-                    if (entry.getValue().getDuration() >= 60000) {
-                        leechPotions++;
+                else
+                    if (effect == StatusEffects.JUMP_BOOST && amplifier >= 5) {
+                        if (entry.getValue().getDuration() >= 60000) {
+                            leechPotions++;
+                        }
                     }
-                }
             }
             if (leechPotions >= 2) {
                 prefix += "§4[⏳] §r";
@@ -464,25 +417,29 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
 
     public InputStream makeScreenshot() {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        Chat.sendPrivateMessageToSelfInfo("Taking a ScreenShot (Code Request)");
 
         AtomicReferenceArray<InputStream> screenshotInputStream = new AtomicReferenceArray<>(new InputStream[1]);
         AtomicBoolean isWaiting = new AtomicBoolean(true);
 
         // Execute the screenshot task on the main thread
         minecraftClient.execute(() -> {
-            try {
-                ByteBuffer buffer = ByteBuffer.wrap(ScreenshotRecorder.takeScreenshot(minecraftClient.getFramebuffer()).getBytes());
+            NativeImage image = ScreenshotRecorder.takeScreenshot(minecraftClient.getFramebuffer());
+            int[] intArray = image.copyPixelsArgb();
+            image.close();
+            ByteBuffer buffer = ByteBuffer.allocate(intArray.length * 4);
+            for (int value : intArray) {
+                buffer.putInt(value);
+            }
+            buffer.flip();
 
-                byte[] byteArray = new byte[buffer.capacity()];
-                buffer.get(byteArray);
+            byte[] byteArray = new byte[buffer.remaining()];
+            buffer.get(byteArray);
 
-                synchronized (screenshotInputStream) {
-                    screenshotInputStream.set(0, new ByteArrayInputStream(byteArray));
-                    isWaiting.set(false);
-                    screenshotInputStream.notifyAll();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (screenshotInputStream) {
+                screenshotInputStream.set(0, new ByteArrayInputStream(byteArray));
+                isWaiting.set(false);
+                screenshotInputStream.notifyAll();
             }
         });
 
@@ -499,8 +456,6 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
 
         return screenshotInputStream.get(0);
     }
-
-
     @Override
     public String getStringFromTextJson(String textJSon) throws Exception {
         try {
@@ -560,67 +515,72 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
                 y += 10; // Adjust the vertical position for the next string
             }
         }
-        else if (UpdateListenerManager.chChestUpdateListener.showOverlay()) {
-            ChChestUpdateListener listener = UpdateListenerManager.chChestUpdateListener;
+        else
+            if (UpdateListenerManager.chChestUpdateListener.showOverlay()) {
+                ChChestUpdateListener listener = UpdateListenerManager.chChestUpdateListener;
 
-            int x = 10;
-            int y = 15;
-            List<Text> toRender = new ArrayList<>();
-            if (listener.isHoster) {
-                String status = listener.lobby.getStatus();
-                switch (status) {
-                    case "Open":
-                        status = "§aOpen";
-                        break;
-                    case "Closed":
-                        status = "§4Closed";
-                        break;
-                    case "Full":
-                        status = "Full";
-                        break;
-                }
-                String warpInfo = "§cFull";
-                int playerThatCanBeWarped = EnvironmentCore.utils.getMaximumPlayerCount() - EnvironmentCore.utils.getPlayerCount();
-                if (playerThatCanBeWarped >= 1) {
-                    warpInfo = "§a(" + playerThatCanBeWarped + ")";
-                }
+                int x = 10;
+                int y = 15;
+                List<Text> toRender = new ArrayList<>();
+                if (listener.isHoster) {
+                    String status = listener.lobby.getStatus();
+                    switch (status) {
+                        case "Open":
+                            status = "§aOpen";
+                            break;
+                        case "Closed":
+                            status = "§4Closed";
+                            break;
+                        case "Full":
+                            status = "Full";
+                            break;
+                    }
+                    String warpInfo = "§cFull";
+                    int playerThatCanBeWarped = EnvironmentCore.utils.getMaximumPlayerCount() - EnvironmentCore.utils.getPlayerCount();
+                    if (playerThatCanBeWarped >= 1) {
+                        warpInfo = "§a(" + playerThatCanBeWarped + ")";
+                    }
 
-                toRender.add(Text.of("§6Status:§0 " + status + "§6 | Slots: " + warpInfo + "§6"));
-                long closingTimeInMinutes = Duration.between(Instant.now(), getLobbyClosingTime()).toMinutes();
-                if (closingTimeInMinutes <= 0) {
-                    toRender.add(Text.of("§4Lobby Closed"));
+                    toRender.add(Text.of("§6Status:§0 " + status + "§6 | Slots: " + warpInfo + "§6"));
+                    long closingTimeInMinutes = Duration.between(Instant.now(), getLobbyClosingTime()).toMinutes();
+                    if (closingTimeInMinutes <= 0) {
+                        toRender.add(Text.of("§4Lobby Closed"));
+                    }
+                    else {
+                        toRender.add(Text.of("§6Closing in " + closingTimeInMinutes / 60 + "h | " + closingTimeInMinutes % 60 + "m"));
+                    }
+                    for (ChChestData chest : listener.getUnopenedChests()) {
+                        if (chest.finder.equals(BBsentials.generalConfig.getUsername())) continue;
+                        toRender.add(Text.of("(" + chest.coords.toString() + ") [ %s ]:".formatted(chest.finder)));
+                        chest.items.stream().map(ChChestItem::getDisplayName).forEach((string) -> toRender.add(Text.of(string)));
+                    }
                 }
                 else {
-                    toRender.add(Text.of("§6Closing in " + closingTimeInMinutes / 60 + "h | " + closingTimeInMinutes % 60 + "m"));
+                    toRender.add(Text.of("§4Please Leave the Lobby after getting all the Chests to allow people to be warped in!"));
+                    for (ChChestData chest : listener.getUnopenedChests()) {
+                        String author = "";
+                        if (!listener.lobby.contactMan.equalsIgnoreCase(chest.finder))
+                            author = " [" + chest.finder + "]";
+                        toRender.add(Text.of("(" + chest.coords.toString() + ")" + author + ":"));
+                        chest.items.stream().map(ChChestItem::getDisplayName).forEach((string) -> toRender.add(Text.of(string)));
+                    }
                 }
-                for (ChChestData chest : listener.getUnopenedChests()) {
-                    if (chest.finder.equals(BBsentials.generalConfig.getUsername())) continue;
-                    toRender.add(Text.of("(" + chest.coords.toString() + ") [ %s ]:".formatted(chest.finder)));
-                    chest.items.stream().map(ChChestItem::getDisplayName).forEach((string) -> toRender.add(Text.of(string)));
-                }
-            }
-            else {
-                toRender.add(Text.of("§4Please Leave the Lobby after getting all the Chests to allow people to be warped in!"));
-                for (ChChestData chest : listener.getUnopenedChests()) {
-                    String author = "";
-                    if (!listener.lobby.contactMan.equalsIgnoreCase(chest.finder)) author = " [" + chest.finder + "]";
-                    toRender.add(Text.of("(" + chest.coords.toString() + ")" + author + ":"));
-                    chest.items.stream().map(ChChestItem::getDisplayName).forEach((string) -> toRender.add(Text.of(string)));
+                for (Text text : toRender) {
+                    drawContext.drawText(MinecraftClient.getInstance().textRenderer, text, x, y, 0xFFFFFF, true);
+                    y += 10; // Adjust the vertical position for the next string
                 }
             }
-            for (Text text : toRender) {
-                drawContext.drawText(MinecraftClient.getInstance().textRenderer, text, x, y, 0xFFFFFF, true);
-                y += 10; // Adjust the vertical position for the next string
-            }
-        }
-        else if (BBsentials.funConfig.lowPlayTimeHelpers && BBsentials.funConfig.lowPlaytimeHelperJoinDate != null) {
-            long differece = ((Instant.now().getEpochSecond() - BBsentials.funConfig.lowPlaytimeHelperJoinDate.getEpochSecond()));
-            String colorCode = "§a";
-            if (differece > 50) colorCode = "§4§l";
-            else if (differece > 45) colorCode = "§4";
-            else if (differece > 40) colorCode = "§6";
-            drawContext.drawText(MinecraftClient.getInstance().textRenderer, Text.of(colorCode + "Time in Lobby: " + differece), 10, 10, 0xFFFFFF, true);
-        }
+            else
+                if (BBsentials.funConfig.lowPlayTimeHelpers && BBsentials.funConfig.lowPlaytimeHelperJoinDate != null) {
+                    long differece = ((Instant.now().getEpochSecond() - BBsentials.funConfig.lowPlaytimeHelperJoinDate.getEpochSecond()));
+                    String colorCode = "§a";
+                    if (differece > 50) colorCode = "§4§l";
+                    else
+                        if (differece > 45) colorCode = "§4";
+                        else
+                            if (differece > 40) colorCode = "§6";
+                    drawContext.drawText(MinecraftClient.getInstance().textRenderer, Text.of(colorCode + "Time in Lobby: " + differece), 10, 10, 0xFFFFFF, true);
+                }
         if (ModInitialiser.tutorialManager.current != null) {
             TutorialManager manager = ModInitialiser.tutorialManager;
             Tutorial current = manager.current;
@@ -784,23 +744,85 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
         String title;
         String description;
         Integer displayTime = DEFAULT_DURATION_MS;
-        Identifier sound = SoundEvents.UI_TOAST_CHALLENGE_COMPLETE.getId();
-        Identifier icon;
+        Identifier sound;
+        ItemStack icon;
+        int textWidth = 125;
         Integer width;
         Integer height;
         Integer imageSize = 16;
         Integer integerToWrap = getWidth() - imageSize * 3;
+        Color color;
         private boolean soundPlayed;
+        private Toast.Visibility visibility = Toast.Visibility.HIDE;
 
-        public BBToast(String title, String description, Identifier sound, Identifier icon) {
+
+        public BBToast(String title, String description) {
+            this(title, description, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, VanillaItems.DIAMOND, Color.WHITE);
+        }
+
+        /**
+         * @param title
+         * @param description
+         * @param sound       use SoundEvents. For autocompletion
+         * @param icon
+         */
+        public BBToast(String title, String description, SoundEvent sound, VanillaItems icon, Color color) {
             this.title = title;
             this.description = description;
-            if (sound != null) this.sound = sound;
-            if (icon != null) this.icon = icon;
+            this.sound = sound != null ? sound.id() : null;
+            this.icon = icon != null ? VanillaRegistry.get(icon).getDefaultStack() : null;
+            this.color = color;
         }
 
         public void setHeight() {
             height = MinecraftClient.getInstance().textRenderer.wrapLines(Text.of(description), integerToWrap).size() * (MinecraftClient.getInstance().textRenderer.fontHeight + 2) + 40;
+        }
+
+        @Override
+        public Visibility getVisibility() {
+            return visibility;
+        }
+
+        @Override
+        public void update(ToastManager manager, long time) {
+            if (!this.soundPlayed && time > 0L && sound != null) {
+                this.soundPlayed = true;
+                manager.getClient().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(sound), 1.0F, 1.0F));
+
+            }
+            this.visibility = (double) time >= 5000.0 * manager.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+
+        }
+
+        @Override
+        public void draw(DrawContext context, TextRenderer textRenderer, long startTime) {
+            context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 0, 0, this.getWidth(), this.getHeight());
+            List<OrderedText> list = textRenderer.wrapLines(Text.literal(title), textWidth);
+            int i = color.getRGB();
+            if (list.size() == 1) {
+                context.drawText(textRenderer, Text.literal(description), 30, 7, i, false);
+                context.drawText(textRenderer, (OrderedText) list.get(0), 30, 18, -1, false);
+            }
+            else {
+                int j = 1500;
+                float f = 300.0F;
+                if (startTime < 1500L) {
+                    int k = MathHelper.floor(MathHelper.clamp((float) (1500L - startTime) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
+                    context.drawText(textRenderer, Text.literal(description), 30, 11, i | k, false);
+                }
+                else {
+                    int k = MathHelper.floor(MathHelper.clamp((float) (startTime - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
+                    int l = this.getHeight() / 2 - list.size() * 9 / 2;
+
+                    for (OrderedText orderedText : list) {
+                        context.drawText(textRenderer, orderedText, 30, l, 16777215 | k, false);
+                        l += 9;
+                    }
+                }
+            }
+
+            context.drawItemWithoutEntity(icon, 8, 8);
+
         }
 
         @Override
@@ -814,49 +836,6 @@ public class Utils implements de.hype.bbsentials.client.common.mclibraries.Utils
             return height;
         }
 
-        public Toast.Visibility draw(DrawContext context, ToastManager manager, long startTime) {
-            int boxWidth = getWidth();
-            int boxHeight = getHeight();
-            int imageSize = 16;
-            context.drawGuiTexture(TEXTURE, 0, 0, boxWidth, boxHeight);
-
-            List<OrderedText> list = manager.getClient().textRenderer.wrapLines(Text.of(description), integerToWrap);
-            int textColor = 0xFFFFFF;
-
-            if (list.size() == 1) {
-                int titleY = (boxHeight - 18) / 2; // Center vertically
-                context.drawText(manager.getClient().textRenderer, Text.of(title), imageSize * 2, titleY, textColor | -16777216, false);
-                context.drawText(manager.getClient().textRenderer, list.get(0), imageSize * 2, titleY + 11, -1, false);
-            }
-            else {
-                int titleColor = 0xFFFFFF;
-                int fadeInColor = 67108864;
-                int fadeOutColor = 67108864;
-
-                if (startTime < 1500L) {
-                    int k = MathHelper.floor(MathHelper.clamp((float) (1500L - startTime) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | fadeInColor;
-                    int titleY = (boxHeight - 18) / 2; // Center vertically
-                    context.drawText(manager.getClient().textRenderer, Text.of(title), imageSize * 2, titleY, textColor | k, false);
-                }
-                else {
-                    int k = MathHelper.floor(MathHelper.clamp((float) (startTime - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | fadeOutColor;
-                    int centerY = (boxHeight - list.size() * 9) / 2;
-
-                    for (OrderedText orderedText : list) {
-                        context.drawText(manager.getClient().textRenderer, orderedText, imageSize * 2, centerY, 16777215 | k, false);
-                        centerY += 9;
-                    }
-                }
-            }
-
-            if (!this.soundPlayed && startTime > 0L) {
-                this.soundPlayed = true;
-                manager.getClient().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(sound), 1.0F, 1.0F));
-            }
-
-            context.drawItemWithoutEntity(Items.DIAMOND.getDefaultStack(), 1, 8, 8);
-            return (double) startTime >= displayTime * manager.getNotificationDisplayTimeMultiplier() ? Visibility.HIDE : Visibility.SHOW;
-        }
 
         public enum ToastType {
             ADVANCEMENT(Identifier.of("toast/advancement")),

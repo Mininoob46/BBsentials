@@ -21,7 +21,7 @@ public class BBsentialsConfigScreenFactory {
     public static Screen create(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Text.of("BBsentials ConfigManager"));
+                .setTitle(Text.of("BBsentials Config"));
         builder.setSavingRunnable(ConfigManager::saveAll);
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         if (BBsentials.developerConfig.doDevDashboardConfig && BBsentials.generalConfig.hasBBRoles("dev")) {
@@ -64,7 +64,7 @@ public class BBsentialsConfigScreenFactory {
         {
             if (BBsentials.generalConfig.getUsername().equalsIgnoreCase("Hype_the_Time")) {
                 server.addEntry(entryBuilder.startTextField(Text.of("Server URL"), BBsentials.bbServerConfig.bbServerURL.replaceAll(".", "*"))
-                        .setDefaultValue("static.88-198-149-240.clients.your-server.de")
+                        .setDefaultValue("hackthetime.de")
                         .setTooltip(Text.of("Place the Server URL of the BBsentials Server here"))
                         .setSaveConsumer((newValue) -> {
                             if (newValue.replace("*", "").trim().isEmpty()) {
@@ -78,7 +78,7 @@ public class BBsentialsConfigScreenFactory {
             }
             else {
                 server.addEntry(entryBuilder.startTextField(Text.of("Server URL"), BBsentials.bbServerConfig.bbServerURL)
-                        .setDefaultValue("static.88-198-149-240.clients.your-server.de")
+                        .setDefaultValue("hackthetime.de")
                         .setTooltip(Text.of("Place the Server URL of the BBsentials Server here"))
                         .setSaveConsumer(newValue -> BBsentials.bbServerConfig.bbServerURL = newValue)
                         .build());
@@ -494,6 +494,11 @@ public class BBsentialsConfigScreenFactory {
                         .setTooltip(Text.of("Will send you a message whenever the Bot starts"))
                         .setSaveConsumer(newValue -> BBsentials.discordConfig.doStartupMessage = newValue)
                         .build());
+                discordIntegration.addEntry(entryBuilder.startBooleanToggle(Text.of("Do Lobby Change Update Message"), BBsentials.discordConfig.sendLobbyUpdateInfo)
+                        .setDefaultValue(true)
+                        .setTooltip(Text.of("Will send you a message when you get into limbo."))
+                        .setSaveConsumer(newValue -> BBsentials.discordConfig.sendLobbyUpdateInfo = newValue)
+                        .build());
                 discordIntegration.addEntry(entryBuilder.startBooleanToggle(Text.of("Use the Discord Game SDK"), BBsentials.discordConfig.sdkMainToggle)
                         .setDefaultValue(false)
                         .setTooltip(Text.of("Main toggle for any usage of the Discord Game SDK."))
@@ -603,6 +608,11 @@ public class BBsentialsConfigScreenFactory {
                     .setDefaultValue(false)
                     .setTooltip(Text.of("Renders the XP Boost Potions differently. Not recommended outside of splash preparation"))
                     .setSaveConsumer(newValue -> BBsentials.splashConfig.xpBoostHighlight = newValue)
+                    .build());
+            splasher.addEntry(entryBuilder.startBooleanToggle(Text.of("Water Bottle → Red Concrete"), BBsentials.splashConfig.markWatterBottles)
+                    .setDefaultValue(false)
+                    .setTooltip(Text.of("Renders Water Bottles as Red Concrete."))
+                    .setSaveConsumer(newValue -> BBsentials.splashConfig.markWatterBottles = newValue)
                     .build());
         }
         return builder.build();
