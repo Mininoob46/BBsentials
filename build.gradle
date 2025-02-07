@@ -1,9 +1,10 @@
+
+plugins {
+    // Required for NeoGradle
+    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id 'org.jetbrains.kotlin.jvm'
+}
 allprojects {
-    plugins {
-        // Required for NeoGradle
-        id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
-        id 'org.jetbrains.kotlin.jvm'
-    }
     repositories {
         mavenCentral()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
@@ -22,10 +23,10 @@ allprojects {
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://repo.hypixel.net/repository/Hypixel/") }
     }
-    dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    }
-    kotlin {
-        jvmToolchain(8)
-    }
+}
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+kotlin {
+    jvmToolchain(8)
 }
