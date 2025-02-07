@@ -1,4 +1,4 @@
-name: Version Bump and Release
+name: Update Version Number Only
 
 on:
   push:
@@ -6,29 +6,13 @@ on:
       - hypeswap
 
 jobs:
-  build_and_release:
+  update_version:
     runs-on: ubuntu-latest
     steps:
       - name: 🔄 Check Out Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: ☕ Set Up Java Environment
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: 📦 Cache Gradle Packages
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: 🔍 Extract Current Version
         id: get_version
@@ -61,17 +45,6 @@ jobs:
             sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" src/main/resources/fabric.mod.json
           fi
 
-      - name: 🔨 Build the Mod
-        run: |
-          chmod +x ./gradlew
-          ./gradlew build
-
-      - name: 🎁 Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mod-jar
-          path: build/libs/*.jar
-
       - name: 🔖 Commit and Push Changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,12 +55,3 @@ jobs:
           git add src/main/resources/*
           git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
           git push origin HEAD:hypeswap
-
-      - name: 🌟 Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/libs/*.jar
-          tag_name: "v${{ steps.bump_version.outputs.new_version }}"
-          name: "Release v${{ steps.bump_version.outputs.new_version }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
