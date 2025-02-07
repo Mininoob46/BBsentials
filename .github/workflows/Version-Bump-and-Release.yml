@@ -52,6 +52,11 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add gradle/libs.versions.toml
-          git add src/main/resources/*
-          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
+
+          # Conditionally add src/main/resources if it exists and has changes
+          if [ -d "src/main/resources" ] && [ -n "$(git status --porcelain src/main/resources)" ]; then
+            git add src/main/resources
+          fi
+
+          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]" || echo "No changes to commit"
           git push origin HEAD:hypeswap
