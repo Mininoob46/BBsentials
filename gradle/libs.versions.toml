@@ -3,7 +3,7 @@ modVersion = "0.99.5"
 kotlinVersion = "1.9.0"
 apache_httpcomponents = "4.5.13"
 lwjglModern = "3.3.3"
-discordGameSDK = "1.3.0"
+discordGameSDK = "v0.5.5"
 
 minecraft_versionSupported = "1.21.*"
 
@@ -55,7 +55,6 @@ commonsText = { module = "org.apache.commons:commons-text", version = "latest.re
 kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version = "1.9.2" }
 reflection = { module = "org.reflections:reflections", version = "latest.release" }
 javazoom = { module = "javazoom:jlayer", version = "latest.release" }
-
 # Hypixel Related Dependencies
 hypixelModApi = { module = "net.hypixel:mod-api", version = "latest.release" }
 neditNBT = { module = "me.nullicorn:Nedit", version = "latest.release" }

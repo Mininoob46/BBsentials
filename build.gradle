@@ -1,33 +1,43 @@
-
 plugins {
-    // Required for NeoGradle
-    id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
-    id 'org.jetbrains.kotlin.jvm'
+    id 'java'
+    id 'fabric-loom' version '1.0-SNAPSHOT' // Adjust the Loom version if necessary
+    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-        maven { url = uri("https://maven.architectury.dev/") }
-        maven { url = uri("https://maven.notenoughupdates.org/releases/") }
-        maven { url = uri("https://maven.fabricmc.net") }
-        maven { url = uri("https://maven.minecraftforge.net/") }
-        maven { url = uri("https://repo.spongepowered.org/maven/") }
-        maven { url = uri("https://repo.sk1er.club/repository/maven-releases/") }
-        maven { url = uri("https://maven.wagyourtail.xyz/releases") }
-        maven { url = uri("https://maven.wagyourtail.xyz/snapshots") }
-        maven { url = uri("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1") }
-        maven { url = uri("https://maven.xpple.dev/maven2") }
-        maven { url = uri("https://maven.terraformersmc.com/releases") }
-        maven { url = uri("https://maven.shedaniel.me/") }
-        maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://repo.hypixel.net/repository/Hypixel/") }
+
+def modVersion = versions.modVersion
+version = modVersion
+group = 'de.hype.bbsentials'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://maven.fabricmc.net/' }
+    maven { url 'https://jitpack.io' } // JitPack repository for discord-game-sdk4j
+    // Add any other repositories you need
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${versions.modern_minecraft}"
+    mappings "net.fabricmc:yarn:${versions.modern_yarn}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${versions.modern_fabric_loader}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${versions.modern_fabric_api}"
+
+    implementation library.discordGameSDK
+    // Include other dependencies as needed, using the 'library' prefix for the versions catalog
+}
+
+loom {
+    // Loom configurations if you have any
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "mod_version": project.version
     }
 }
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "com.github.JnCrMx:discord-game-sdk4j:discordGameSDK"
-}
-kotlin {
-    jvmToolchain(8)
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.release = 17 // Use Java 17, adjust if necessary
 }
