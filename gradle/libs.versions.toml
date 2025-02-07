@@ -53,16 +53,10 @@ guava = { module = "com.google.guava:guava", version = "latest.release" }
 commonsLang = { module = "org.apache.commons:commons-lang3", version = "latest.release" }
 commonsText = { module = "org.apache.commons:commons-text", version = "latest.release" }
 kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version = "1.9.2" }
-reflection = {module = "org.reflections:reflections", version = "latest.release"}
+reflection = { module = "org.reflections:reflections", version = "latest.release" }
 javazoom = { module = "javazoom:jlayer", version = "latest.release" }
-#Hypixel Related Dependencies
+
+# Hypixel Related Dependencies
 hypixelModApi = { module = "net.hypixel:mod-api", version = "latest.release" }
 neditNBT = { module = "me.nullicorn:Nedit", version = "latest.release" }
 neurepoparser = { module = "moe.nea:neurepoparser", version = "latest.release" }
-
-
-[libraries]
-apache_httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apache_httpcomponents" }
-# ... other libraries ...
-discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version.ref = "discordGameSDK" }
-# ... rest of your libraries ...
