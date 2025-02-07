@@ -17,8 +17,8 @@ jobs:
       - name: ☕ Set Up Java Environment
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'  # Use 'zulu' for Minecraft 1.16 and below
-          java-version: '17'       # Java 17 for Minecraft 1.18 and above
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: 📦 Cache Gradle Packages
         uses: actions/cache@v3
@@ -34,8 +34,8 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          VERSION_LINE=$(grep "^version = '" build.gradle)
-          VERSION=$(echo $VERSION_LINE | sed "s/version = '\(.*\)'/\1/")
+          VERSION_LINE=$(grep '^modVersion = ' gradle/libs.versions.toml)
+          VERSION=$(echo $VERSION_LINE | sed 's/modVersion = "\(.*\)"/\1/')
           echo "Current version is $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -43,11 +43,11 @@ jobs:
         id: bump_version
         shell: bash
         run: |
-          IFS='.' read -r major minor patch <<< "${{ steps.get_version.outputs.version }}"
+          IFS='.' read -r major minor patch extra <<< "${{ steps.get_version.outputs.version }}"
           patch=$((patch + 1))
           NEW_VERSION="$major.$minor.$patch"
           echo "New version is $NEW_VERSION"
-          sed -i "s/version = '.*'/version = '$NEW_VERSION'/" build.gradle
+          sed -i "s/modVersion = \".*\"/modVersion = \"$NEW_VERSION\"/" gradle/libs.versions.toml
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: 📝 Update Mod Metadata
@@ -78,9 +78,9 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add build.gradle
+          git add gradle/libs.versions.toml
           git add src/main/resources/*
-          git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
+          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
           git push origin HEAD:hypeswap
 
       - name: 🌟 Create GitHub Release
