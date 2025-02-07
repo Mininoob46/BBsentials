@@ -1,23 +1,26 @@
 package de.hype.bbsentials.client.common.config;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 import com.google.gson.internal.LinkedTreeMap;
 import de.hype.bbsentials.client.common.chat.Chat;
 import de.hype.bbsentials.client.common.client.objects.TrustedPartyMember;
+import de.hype.bbsentials.client.common.hpmodapi.HPModAPIPacket;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.hype.bbsentials.client.common.client.APIUtils.getMcUUIDbyUsername;
 
 
 public class PartyConfig extends BBsentialsConfig {
-    public transient List<String> partyMembers = new ArrayList<>();
     public boolean allowBBinviteMe = true;
     public List<TrustedPartyMember> trustedPartyMembers = new ArrayList<>();
     public boolean useRecommendedTrustedMembers = false;
     public boolean acceptReparty = true;
-    public transient boolean isPartyLeader = false;
     public boolean allowServerPartyInvite = true;
     public transient List<TrustedPartyMember> recommendedTrustedMembers;
     public boolean announceRemoteMsgPartyCommands = true;
@@ -26,6 +29,8 @@ public class PartyConfig extends BBsentialsConfig {
     public Integer hidePartyJoinAndLeave = 0;
     public boolean hideOwnPartyWarps;
     public boolean hidePartyChatCommands;
+    @Expose(serialize = false, deserialize = false)
+    public Map<String, AcceptPartyInvites> partyAcceptConfig = new HashMap<>();
 
     public PartyConfig() {
         super(1);
@@ -73,10 +78,7 @@ public class PartyConfig extends BBsentialsConfig {
 
     }
 
-    public boolean hidePartyDisconnet() {
-        return hidePartyDisconnect < partyMembers.size() && hidePartyDisconnect > 0;
-    }
-    public boolean hidePartyJoinOrLeave() {
-        return hidePartyJoinAndLeave < partyMembers.size() && hidePartyJoinAndLeave > 0;
+
+    public record AcceptPartyInvites(boolean leavePartyIfPresent, Instant timeout) {
     }
 }

@@ -5,6 +5,7 @@ import de.hype.bbsentials.client.common.chat.Message;
 import de.hype.bbsentials.client.common.client.BBsentials;
 import de.hype.bbsentials.client.common.client.objects.ServerSwitchTask;
 import de.hype.bbsentials.client.common.communication.BBsentialConnection;
+import de.hype.bbsentials.client.common.config.PartyManager;
 import de.hype.bbsentials.client.common.mclibraries.EnvironmentCore;
 import de.hype.bbsentials.shared.constants.ChChestItem;
 import de.hype.bbsentials.shared.constants.ChChestItems;
@@ -51,7 +52,7 @@ public class UpdateListenerManager {
                     ServerSwitchTask.onServerLeaveTask(() -> BBsentials.partyConfig.allowBBinviteMe = false);
                 }
                 else if (data.bbcommand.trim().equalsIgnoreCase("/p join " + BBsentials.generalConfig.getUsername())) {
-                    if (!BBsentials.partyConfig.isPartyLeader) BBsentials.sender.addImmediateSendTask("/p leave");
+                    if (!PartyManager.isInParty()) BBsentials.sender.addImmediateSendTask("/p leave");
                     BBsentials.sender.addHiddenSendTask("/stream open 23", 1);
                     BBsentials.sender.addHiddenSendTask("/pl", 2);
                     Chat.sendPrivateMessageToSelfImportantInfo("Opened Stream Party for you since you announced chchest items");
@@ -66,13 +67,13 @@ public class UpdateListenerManager {
                 BBsentials.executionService.execute(UpdateListenerManager::permanentCheck);
                 if (showChChest(data.chests.get(0).items)) {
                     String tellrawText = ("{\"text\":\"BB: @username found @item in a chest at (@coords). Click here to get a party invite @extramessage\",\"color\":\"green\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"@inviteCommand\"},\"hoverEvent\":{\"action\":\"show_text\",\"contents\":[\"On clicking you will get invited to a party. Command executed: @inviteCommand\"]}}");
-                    tellrawText = tellrawText.replace("@username", data.contactMan);
+                    tellrawText = tellrawText.replace("@username", StringEscapeUtils.escapeJson(data.contactMan));
                     tellrawText = tellrawText.replace("@item", StringEscapeUtils.escapeJson(data.chests.get(0).items.stream()
                             .map(ChChestItem::getDisplayName)
                             .toList()
                             .toString()));
-                    tellrawText = tellrawText.replace("@coords", data.chests.get(0).coords.toString());
-                    tellrawText = tellrawText.replace("@inviteCommand", StringEscapeUtils.escapeJson(data.bbcommand));
+                    tellrawText = tellrawText.replace("@coords", StringEscapeUtils.escapeJson(data.chests.get(0).coords.toString()));
+                    tellrawText = tellrawText.replace("@inviteCommand", StringEscapeUtils.escapeJson(StringEscapeUtils.escapeJson(data.bbcommand)));
                     if (!(data.extraMessage == null || data.extraMessage.isEmpty())) {
                         tellrawText = tellrawText.replace("@extramessage", " : " + StringEscapeUtils.escapeJson(data.extraMessage));
                     }

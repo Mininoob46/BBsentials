@@ -10,6 +10,7 @@ import de.hype.bbsentials.client.common.mclibraries.interfaces.NBTCompound;
 import de.hype.bbsentials.client.common.mclibraries.interfaces.Text;
 import de.hype.bbsentials.shared.constants.Formatting;
 import de.hype.bbsentials.shared.constants.VanillaItems;
+import de.hype.bbsentials.shared.objects.BBRole;
 import de.hype.bbsentials.shared.packets.function.PositionCommunityFeedback;
 import net.minecraft.client.MinecraftClient;
 
@@ -78,21 +79,21 @@ public abstract class RenderingDefinitions {
                                     if (full) check.texturePath = "bbsentials:hub-items/splash_hub_full";
                                     else check.texturePath = "bbsentials:hub-items/splash_hub";
                                 } else if (value.serverID.isEmpty()) {
-                                    if (value.hubNumber == hubNumber) {
+                                    if (value.hubSelectorData != null && value.hubSelectorData.hubNumber == hubNumber) {
                                         if (full) check.texturePath = "bbsentials:hub-items/splash_hub_full";
                                         else check.texturePath = "bbsentials:hub-items/splash_hub";
                                     }
-                                }else {
+                                } else {
                                     return false;
                                 }
                                 List<Text> textList = check.getTextTooltip();
-                                textList.getFirst().setStringText("%s(Splash) %s".formatted(Formatting.GOLD,check.getItemStackName()));
-                                textList.add(4,EnvironmentCore.textutils.createText("%sSplasher: %s%s".formatted(Formatting.GRAY,Formatting.LIGHT_PURPLE,value.announcer)));
-                                textList.add(5,EnvironmentCore.textutils.createText(""));
+                                textList.getFirst().setStringText("%s(Splash) %s".formatted(Formatting.GOLD, check.getItemStackName()));
+                                textList.add(4, EnvironmentCore.textutils.createText("%sSplasher: %s%s".formatted(Formatting.GRAY, Formatting.LIGHT_PURPLE, value.announcer)));
+                                textList.add(5, EnvironmentCore.textutils.createText(""));
                                 if (value.extraMessage != null && !value.extraMessage.isEmpty()) {
-                                    textList.add(5,EnvironmentCore.textutils.createText("%sMessage: %s".formatted(Formatting.GRAY,value.extraMessage)));
+                                    textList.add(5, EnvironmentCore.textutils.createText("%sMessage: %s".formatted(Formatting.GRAY, value.extraMessage)));
                                 }
-                                textList.add(5,EnvironmentCore.textutils.createText("%sLocation: %s".formatted(Formatting.GRAY,value.locationInHub.getDisplayString())));
+                                textList.add(5, EnvironmentCore.textutils.createText("%sLocation: %s".formatted(Formatting.GRAY, value.locationInHub.getDisplayString())));
                                 return true;
                             }
                         }
@@ -116,7 +117,7 @@ public abstract class RenderingDefinitions {
                 }
             }
         };
-        if (BBsentials.generalConfig.hasBBRoles("splasher")) {
+        if (BBsentials.generalConfig.hasBBRoles(BBRole.SPLASHER)) {
             new RenderingDefinitions("Splasher Exp Boost Potion Changer") {
                 @Override
                 public boolean modifyItem(ItemStack stack, NBTCompound extraNbt, RenderStackItemCheck check, String itemName) {
@@ -136,11 +137,9 @@ public abstract class RenderingDefinitions {
                             if (itemName.startsWith("Combat")) check.renderAsItem(VanillaItems.STONE_SWORD);
                             return false;
                         }
+                    } else if (BBsentials.splashConfig.markWatterBottles && itemName.equals("Water Bottle")) {
+                        check.renderAsItem(VanillaItems.RED_CONCRETE);
                     }
-                    else
-                        if (BBsentials.splashConfig.markWatterBottles && itemName.equals("Water Bottle")) {
-                            check.renderAsItem(VanillaItems.RED_CONCRETE);
-                        }
                     return false;
                 }
             };

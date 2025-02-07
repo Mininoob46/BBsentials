@@ -68,12 +68,30 @@ public class ChChestItems {
         return customItem;
     }
 
+    public static List<ChChestItem> getItems(String[] itemInput) {
+        List<String> items = List.of(itemInput);
+        List<ChChestItem> allItems = ChChestItems.getAllItems();
+        List<ChChestItem> foundItems = new ArrayList<>();
+        for (String item : items) {
+            ChChestItem foundItem = null;
+            for (ChChestItem allItem : allItems) {
+                if (allItem.getDisplayName().equals(item)) {
+                    foundItem = allItem;
+                    break;
+                }
+            }
+            if (foundItem == null) throw new IllegalArgumentException("Unknown Item: " + item);
+            foundItems.add(foundItem);
+
+        }
+        return foundItems;
+    }
+
     public static ChChestItem getPredefinedItem(String displayName) {
         for (ChChestItem item : items) {
             int amount = 1;
             String countString = displayName.replaceAll("\\D", "");
             if (!countString.isEmpty()) amount = Integer.parseInt(countString);
-            //TODO use count?
             if (item.isPowder()) {
                 if (displayName.matches(".*Powder")) {
                     if (amount >= 1200) {
@@ -91,14 +109,6 @@ public class ChChestItems {
             }
         }
         return null;
-    }
-
-    public static List<ChChestItem> getItem(String[] displayNames) {
-        List<ChChestItem> result = new ArrayList<>();
-        for (int i = 0; i < displayNames.length; i++) {
-            result.add(getItem(displayNames[i]));
-        }
-        return result;
     }
 
     // Utility method to check if a field is public, static, and final

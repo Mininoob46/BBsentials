@@ -24,7 +24,7 @@ public class ChestLobbyData {
     public ChestLobbyData(Collection<ChChestData> chest, String serverId, String bbcommand, String extraMessage, Object status) {
         chests.addAll(chest);
         this.serverId = serverId;
-        this.contactMan = chests.get(0).finder;
+        this.contactMan = chests.getFirst().finder;
         this.bbcommand = bbcommand;
         this.extraMessage = extraMessage;
         setStatusNoOverride(status);
@@ -35,7 +35,7 @@ public class ChestLobbyData {
     }
 
     /**
-     * @param statusBase String or StatusConstants as type.
+     * @param statusBase String or StatusConstants as buttonStyle.
      * @throws IllegalArgumentException if Object is not a {@link String} or {@link StatusConstants}
      */
     public void setStatus(Object statusBase) throws SQLException {
@@ -47,8 +47,7 @@ public class ChestLobbyData {
     }
 
     public void setStatusNoOverride(Object statusBase) {
-        if (statusBase instanceof StatusConstants) {
-            StatusConstants statusConstants = (StatusConstants) statusBase;
+        if (statusBase instanceof StatusConstants statusConstants) {
             this.status = statusConstants.getDisplayName();
             color = statusConstants.getColor();
         }
@@ -56,7 +55,7 @@ public class ChestLobbyData {
             this.status = (String) statusBase;
         }
         else {
-            throw new IllegalArgumentException("Invalid input type. Expected String or StatusConstants.");
+            throw new IllegalArgumentException("Invalid input buttonStyle. Expected String or StatusConstants.");
         }
     }
 
@@ -106,5 +105,10 @@ public class ChestLobbyData {
             setLobbyMetaData(lobby.getPlayersStillIn(), lobby.getClosingTime());
         } catch (SQLException ignored) {
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return lobbyId;
     }
 }
