@@ -27,7 +27,6 @@ allprojects {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.github.JnCrMx:discord-game-sdk4j:discordGameSDK"
-    implementation libs.reflections
 }
 kotlin {
     jvmToolchain(8)
