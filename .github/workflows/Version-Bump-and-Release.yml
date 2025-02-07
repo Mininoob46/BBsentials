@@ -17,8 +17,8 @@ jobs:
       - name: ☕ Set Up Java Environment
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'temurin'  # Use 'zulu' for Minecraft 1.16 and below
+          java-version: '17'       # Java 17 for Minecraft 1.18 and above
 
       - name: 📦 Cache Gradle Packages
         uses: actions/cache@v3
@@ -67,7 +67,7 @@ jobs:
           ./gradlew build
 
       - name: 🎁 Upload Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mod-jar
           path: build/libs/*.jar
