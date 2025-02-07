@@ -32,7 +32,7 @@ gson = { module = "com.google.code.gson:gson", version = "latest.release" }
 lwjglGlfw = { module = "org.lwjgl:lwjgl-glfw", version.ref = "lwjglModern" }
 discordJDA = { module = "net.dv8tion:JDA", version = "latest.release" }
 git = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "latest.release" }
-discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version = "discordGameSDK" }
+discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version.ref = "discordGameSDK" }
 legacy_mcp = { module = "de.oceanlabs.mcp:mcp_stable", version.ref = "legacy_mcp" }
 legacy_minecraft = { module = "com.mojang:minecraft", version.ref = "legacy_minecraft" }
 legacy_forge = { module = "net.minecraftforge:forge", version.ref = "legacy_forge" }
@@ -60,3 +60,9 @@ hypixelModApi = { module = "net.hypixel:mod-api", version = "latest.release" }
 neditNBT = { module = "me.nullicorn:Nedit", version = "latest.release" }
 neurepoparser = { module = "moe.nea:neurepoparser", version = "latest.release" }
 
+
+[libraries]
+apache_httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "apache_httpcomponents" }
+# ... other libraries ...
+discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version.ref = "discordGameSDK" }
+# ... rest of your libraries ...
