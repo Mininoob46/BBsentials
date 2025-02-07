@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'  # Use 'zulu' for Minecraft 1.16 and below
+          java-version: '21'
 
       - name: 📦 Cache Gradle Packages
         uses: actions/cache@v3
@@ -64,7 +64,7 @@ jobs:
       - name: 🔨 Build the Mod
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew clean build
 
       - name: 🎁 Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -79,7 +79,6 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add gradle/libs.versions.toml
-          # Conditionally add src/main/resources if it exists and has changes
           if [ -d "src/main/resources" ] && [ -n "$(git status --porcelain src/main/resources)" ]; then
             git add src/main/resources
           fi
