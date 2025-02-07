@@ -3,6 +3,7 @@ modVersion = "0.99.5"
 kotlinVersion = "1.9.0"
 apache_httpcomponents = "4.5.13"
 lwjglModern = "3.3.3"
+discordGameSDK = "1.3.0"
 
 minecraft_versionSupported = "1.21.*"
 
@@ -31,7 +32,7 @@ gson = { module = "com.google.code.gson:gson", version = "latest.release" }
 lwjglGlfw = { module = "org.lwjgl:lwjgl-glfw", version.ref = "lwjglModern" }
 discordJDA = { module = "net.dv8tion:JDA", version = "latest.release" }
 git = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "latest.release" }
-discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version = "0.5.5" }
+discordGameSDK = { module = "com.github.JnCrMx:discord-game-sdk4j", version = "discordGameSDK" }
 legacy_mcp = { module = "de.oceanlabs.mcp:mcp_stable", version.ref = "legacy_mcp" }
 legacy_minecraft = { module = "com.mojang:minecraft", version.ref = "legacy_minecraft" }
 legacy_forge = { module = "net.minecraftforge:forge", version.ref = "legacy_forge" }
