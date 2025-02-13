@@ -31,11 +31,11 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(8)) // Ensure Java 8 compatibility
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21)) // Java 21 required
 }
 
 kotlin {
-    jvmToolchain(8) // Ensure Kotlin compiles with Java 8
+    jvmToolchain(21) // Ensure Kotlin compiles with Java 21
 }
 
 // Ensure compiled source files are included in the JAR
