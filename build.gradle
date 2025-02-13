@@ -24,6 +24,11 @@ allprojects {
         maven { url = uri("https://repo.hypixel.net/repository/Hypixel/") }
     }
 }
+tasks.withType(Jar).configureEach {
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.github.JnCrMx:discord-game-sdk4j:discordGameSDK"
