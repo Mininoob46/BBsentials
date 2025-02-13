@@ -1,6 +1,6 @@
 plugins {
-    id 'java'  // Ensures proper Java build configuration
-    id 'org.jetbrains.kotlin.jvm' version '1.9.0'  // Adjust Kotlin version as needed
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
 }
 
@@ -26,26 +26,26 @@ allprojects {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8" // Keep Kotlin
     implementation "com.github.JnCrMx:discord-game-sdk4j:discordGameSDK"
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(8)) // Ensures compatibility with Minecraft
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8)) // Ensure Java 8 compatibility
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(8) // Ensure Kotlin compiles with Java 8
 }
 
-// Ensure that the compiled source files are included in the jar
+// Ensure compiled source files are included in the JAR
 jar {
     from {
         sourceSets.main.output
     }
 }
 
-// Ensure Kotlin files are included properly
+// Define the source sets (Java + Kotlin)
 sourceSets {
     main {
         java {
@@ -54,12 +54,12 @@ sourceSets {
     }
 }
 
-// If using Fabric or Forge, replace with the appropriate jar task
+// Build task to create a JAR
 tasks.register('buildJar', Jar) {
-    archiveBaseName.set('YourModName')  // Change to match your mod name
+    archiveBaseName.set('YourModName')  // Change this to match your mod name
     from sourceSets.main.output
     destinationDirectory.set(file("$buildDir/libs"))
 }
 
-// Build the jar when running `gradlew build`
+// Make sure the jar gets built when running `gradlew build`
 tasks.build.dependsOn tasks.buildJar
