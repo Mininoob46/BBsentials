@@ -64,7 +64,7 @@ jobs:
       - name: 🔨 Build the Mod
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build
+          ./gradlew clean shadowJar
 
       - name: 🎁 Upload Build Artifact
         uses: actions/upload-artifact@v4
