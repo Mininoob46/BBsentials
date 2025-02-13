@@ -1,9 +1,9 @@
-
 plugins {
-    // Required for NeoGradle
+    id 'java'  // Ensures proper Java build configuration
+    id 'org.jetbrains.kotlin.jvm' version '1.9.0'  // Adjust Kotlin version as needed
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
-    id 'org.jetbrains.kotlin.jvm'
 }
+
 allprojects {
     repositories {
         mavenCentral()
@@ -24,15 +24,42 @@ allprojects {
         maven { url = uri("https://repo.hypixel.net/repository/Hypixel/") }
     }
 }
-tasks.withType(Jar).configureEach {
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.github.JnCrMx:discord-game-sdk4j:discordGameSDK"
 }
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8)) // Ensures compatibility with Minecraft
+}
+
 kotlin {
     jvmToolchain(8)
 }
+
+// Ensure that the compiled source files are included in the jar
+jar {
+    from {
+        sourceSets.main.output
+    }
+}
+
+// Ensure Kotlin files are included properly
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/main/kotlin']
+        }
+    }
+}
+
+// If using Fabric or Forge, replace with the appropriate jar task
+tasks.register('buildJar', Jar) {
+    archiveBaseName.set('YourModName')  // Change to match your mod name
+    from sourceSets.main.output
+    destinationDirectory.set(file("$buildDir/libs"))
+}
+
+// Build the jar when running `gradlew build`
+tasks.build.dependsOn tasks.buildJar
