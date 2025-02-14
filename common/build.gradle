@@ -70,3 +70,21 @@ artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+// Ensure the jar task includes all necessary files
+jar {
+    from sourceSets.main.output
+    archiveBaseName.set('bbsentials-common')
+    archiveVersion.set('1.0.0') // Set the appropriate version
+}

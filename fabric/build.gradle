@@ -49,22 +49,46 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     } // Mod Config
     implementation libs.kotlinStdlib
-    modImplementation(libs.appleClientCommands.get()) // Commands
-    implementation(libs.git.get()) //Git versioning for Neu REPO without downloading fully each time
-    modImplementation(libs.commonsText.get())
+    modImplementation(include(libs.appleClientCommands.get())) // Commands
+    include(implementation(libs.git.get())) //Git versioning for Neu REPO without downloading fully each time
+    include(modImplementation(libs.commonsText.get()))
 
     //Hypixel Related Dependencies
     modImplementation(libs.hypixelModApi.get())// Mod API (Official)
-    modImplementation(libs.neurepoparser.get()) //Neu REPO
-    modImplementation(libs.neditNBT.get()) //NBT Parser
+    include(modImplementation(libs.neurepoparser.get())) //Neu REPO
+    transitiveInclude(modImplementation(libs.neditNBT.get())) //NBT Parser
 
     //Discord Related Dependencies
-    modImplementation(libs.discordGameSDK.get()) // Discord Game SDK
-    modImplementation(libs.discordJDA.get()) //Discord Bot
+    transitiveInclude(modImplementation(libs.discordGameSDK.get())) // Discord Game SDK
+    transitiveInclude(modImplementation(libs.discordJDA.get())) //Discord Bot
 
     //Other Dependencies
-    modImplementation(libs.javazoom.get()) // Music Player
-    modImplementation(libs.reflection.get()) // Music Player
+    transitiveInclude(modImplementation(libs.javazoom.get())) // Music Player
+    transitiveInclude(modImplementation(libs.reflection.get())) // Music Player
+
+    configurations.transitiveInclude.resolvedConfiguration.resolvedArtifacts.forEach {
+        modImplementation(it.moduleVersion.id.toString())
+        include(it.moduleVersion.id.toString())
+    }
+
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+// Ensure the jar task includes all necessary files
+jar {
+    from sourceSets.main.output
+    archiveBaseName.set('bbsentials')
+    archiveVersion.set('1.0.0') // Set the appropriate version
 }
 
 loom {

@@ -56,7 +56,7 @@ sourceSets {
 
 // Build task to create a JAR
 tasks.register('buildJar', Jar) {
-    archiveBaseName.set('YourModName')  // Change this to match your mod name
+    archiveBaseName.set('bbsentials')  // Change this to match your mod name
     from sourceSets.main.output
     destinationDirectory.set(file("$buildDir/libs"))
 }
