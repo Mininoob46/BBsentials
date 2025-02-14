@@ -66,10 +66,11 @@ configurations {
     }
 }
 
-artifacts {
-    commonJava sourceSets.main.java.sourceDirectories.singleFile
-    commonResources sourceSets.main.resources.sourceDirectories.singleFile
-}
+// Remove the artifacts configuration
+// artifacts {
+//     commonJava sourceSets.main.java.sourceDirectories.singleFile
+//     commonResources sourceSets.main.resources.sourceDirectories.singleFile
+// }
 
 sourceSets {
     main {
