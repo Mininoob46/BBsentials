@@ -181,8 +181,7 @@ open class Vector3i : Comparable<Vector3i> {
         private val SIN_TABLE = FloatArray(65536)
 
         init {
-            var i: Int
-            i = 0
+            var i: Int = 0
             while (i < 65536) {
                 SIN_TABLE[i] = kotlin.math.sin(i.toDouble() * 3.141592653589793 * 2.0 / 65536.0).toFloat()
                 ++i

@@ -14,30 +14,13 @@ enum class BBRole(dbRoleName: String, visualRoleName: String) {
     STRATMAKER("strat_maker", "Strat Maker"),
     DEBUG("debug", "Debug");
 
-    val dBRoleName: String
-    val visualName: String
-
-
-    init {
-        this.dBRoleName = dbRoleName
-        this.visualName = visualRoleName
-    }
+    val dBRoleName: String = dbRoleName
+    val visualName: String = visualRoleName
 
     val description: String?
         get() = null
 
     companion object {
         var roles: MutableMap<String, BBRole>? = null
-
-        @JvmStatic
-        fun getRoleByDBName(dbRoleName: String): BBRole {
-            roles?.let { return it[dbRoleName]!! }
-            val roles = HashMap<String, BBRole>()
-            for (value in entries) {
-                roles.put(value.dBRoleName, value)
-            }
-            this.roles = roles
-            return roles.get(dbRoleName)!!
-        }
     }
 }

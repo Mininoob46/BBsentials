@@ -7,10 +7,8 @@ import de.hype.bingonet.shared.constants.MiningEvents
 /**
  * used to announce a mining event network wide. Can be used by both Client and Server to announce to each other.
  */
-class MiningEventPacket(event: MiningEvents, username: String, island: Islands) : AbstractPacket(1, 1) {
-    @JvmField
-    val event: MiningEvents
-    val username: String
+class MiningEventPacket(@JvmField val event: MiningEvents, val username: String, island: Islands) :
+    AbstractPacket(1, 1) {
 
     @JvmField
     val island: Islands
@@ -22,8 +20,6 @@ class MiningEventPacket(event: MiningEvents, username: String, island: Islands) 
      * @throws Exception when the Island is invalid. Can be when the island is CH but event can only be in Dwarfen Mines
      */
     init {
-        this.event = event
-        this.username = username
         require(!(island != Islands.CRYSTAL_HOLLOWS && island != Islands.DWARVEN_MINES)) { "Invalid Island!" }
         if (island == Islands.CRYSTAL_HOLLOWS) {
             require(!(event == MiningEvents.MITHRIL_GOURMAND || event == MiningEvents.RAFFLE || event == MiningEvents.GOBLIN_RAID)) { "The specified event can not happen on this Server" }

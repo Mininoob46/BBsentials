@@ -37,8 +37,8 @@ enum class Formatting(val mCCode: String, @JvmField val discordFormattingCode: S
 
     companion object {
         @JvmStatic
-        fun covertToDiscordAnsi(goalString: String): String {
-            var goalString = goalString
+        fun covertToDiscordAnsi(string: String): String {
+            var goalString = string
             for (formatting in entries) {
                 goalString = goalString.replace(formatting.mCCode.toRegex(), formatting.discordFormattingCode)
             }

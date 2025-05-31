@@ -30,14 +30,13 @@ open class ChestLobbyData(
     var lobbyId: Int = 0
 
     @JvmField
-    var serverId: String
+    var serverId: String = serverId
     lateinit var status: String
     var playersStillIn: MutableList<String>? = ArrayList()
     var closingTime: Instant = Instant.now().plus(360, ChronoUnit.MINUTES)
         protected set
 
     init {
-        this.serverId = serverId
         this.bbcommand = bbcommand
         this.extraMessage = extraMessage
         setStatusNoOverride(status)

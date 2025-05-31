@@ -7,11 +7,6 @@ enum class MinionStorage(val displayName: String, slots: Int) {
     XLARGE("X-Large Storage", 21),
     XXLARGE("XX-Large Storage", 27);
 
-    val storage: Int
-    val storageSlots: Int
-
-    init {
-        this.storageSlots = slots
-        this.storage = slots * 64
-    }
+    val storage: Int = slots * 64
+    val storageSlots: Int = slots
 }
