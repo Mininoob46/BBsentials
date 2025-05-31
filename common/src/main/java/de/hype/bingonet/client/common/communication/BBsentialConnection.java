@@ -93,7 +93,7 @@ public class BBsentialConnection {
             // Check if the JAR file exists
             if (jarFile.exists()) {
                 // Delete the JAR file
-                return jarFile.delete();
+                return jarFile.renameTo(new File(jarFile.getAbsolutePath() + ".bn-deactivated"));
             } else {
                 return false;
             }
