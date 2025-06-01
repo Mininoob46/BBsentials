@@ -32,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Mixin(HandledScreen.class)
@@ -80,7 +81,9 @@ public abstract class InventoryKeyBinds<T extends ScreenHandler> extends Screen 
                     if (getTitle().getString().endsWith("Selector")) {
                         List<Slot> slots = new ArrayList<>(handler.slots);
                         if (BingoNet.dataStorage.getServerJoinTime().plus(3, ChronoUnit.SECONDS).isBefore(Instant.now())) {
-                            for (SplashManager.DisplaySplash value : SplashManager.splashPool.values()) {
+                            var sortedPool = new ArrayList<>(SplashManager.splashPool.values().stream().sorted(Comparator.comparing(it -> it.receivedTime)).toList());
+                            java.util.Collections.reverse(sortedPool);
+                            for (SplashManager.DisplaySplash value : sortedPool) {
                                 if (value.serverID != null) {
                                     for (Slot slot : slots) {
                                         for (Text line : slot.getStack().get(DataComponentTypes.LORE).lines()) {
