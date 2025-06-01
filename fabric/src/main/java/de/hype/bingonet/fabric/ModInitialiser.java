@@ -34,6 +34,7 @@ import de.hype.bingonet.fabric.tutorial.Tutorial;
 import de.hype.bingonet.fabric.tutorial.TutorialManager;
 import de.hype.bingonet.fabric.tutorial.nodes.ObtainItemNode;
 import de.hype.bingonet.shared.constants.HypixelInstanceIsland;
+import de.hype.bingonet.shared.constants.Islands;
 import de.hype.bingonet.shared.objects.BBRole;
 import de.hype.bingonet.shared.objects.Position;
 import de.hype.bingonet.shared.objects.RenderInformation;
@@ -56,6 +57,8 @@ import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -171,6 +174,13 @@ public class ModInitialiser implements ClientModInitializer {
                                         return suggestionsBuilder.buildFuture();
                                     })
                                     .executes((context -> {
+                                        if (dataStorage.getIsland() == Islands.DUNGEON) {
+                                            var time = dataStorage.getServerJoinTime().plusSeconds(30);
+                                            if (time.isAfter(Instant.now())) {
+                                                Chat.sendPrivateMessageToSelfError("Cancelled joininstance command to avoid rate limit. Try again in %s seconds".formatted(Duration.between(Instant.now(), time).getSeconds()));
+                                                return 0;
+                                            }
+                                        }
                                         sender.addHiddenSendTask("/joininstance " + StringArgumentType.getString(context, "type"), 0);
                                         return 1;
                                     }

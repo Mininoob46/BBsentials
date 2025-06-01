@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import de.hype.bingonet.fabric.mixins.mixin.RootCommandNodeAccessMixin;
 import de.hype.bingonet.fabric.mixins.mixinaccessinterfaces.IBingoNetCommandSource;
 import de.hype.bingonet.fabric.mixins.mixinaccessinterfaces.IRootCommandNodeMixinAccess;
 import net.minecraft.client.MinecraftClient;
@@ -25,6 +24,7 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class BBCommandDispatcher extends CommandDispatcher<IBingoNetCommandSource> {
     private static BBCommandDispatcher INSTANCE;
+    public static CommandDispatcher<IBingoNetCommandSource> REPLACE_DISPATCHER = new CommandDispatcher<>();
     private final List<LiteralArgumentBuilder<IBingoNetCommandSource>> replaceChilds = new ArrayList<LiteralArgumentBuilder<IBingoNetCommandSource>>();
 
 
@@ -101,9 +101,23 @@ public class BBCommandDispatcher extends CommandDispatcher<IBingoNetCommandSourc
         return type == builtins.dispatcherUnknownCommand() || type == builtins.dispatcherParseException();
     }
 
+    public static boolean executeReplacedCommand(String command) {
+        IBingoNetCommandSource commandSource = (IBingoNetCommandSource) MinecraftClient.getInstance().getNetworkHandler().getCommandSource();
+        try {
+            // Build a temporary dispatcher for this node
+            var child = MinecraftClient.getInstance().getNetworkHandler().getCommandDispatcher().getRoot().getChild(command.split(" ")[0]);
+            if (child == null) return false;
+            return REPLACE_DISPATCHER.execute(command, commandSource) != 0;
+        } catch (CommandSyntaxException e) {
+            commandSource.sendError(getErrorMessage(e));
+            return false;
+        }
+    }
+
     public LiteralCommandNode<IBingoNetCommandSource> replaceRegister(LiteralArgumentBuilder<IBingoNetCommandSource> command) {
         LiteralArgumentBuilder<IBingoNetCommandSource> toReturn = command;
         replaceChilds.add(toReturn);
+        REPLACE_DISPATCHER.getRoot().addChild(command.build());
         return toReturn.build();
     }
 

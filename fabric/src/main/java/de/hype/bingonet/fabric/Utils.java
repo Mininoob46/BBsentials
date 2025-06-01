@@ -500,7 +500,7 @@ public class Utils implements de.hype.bingonet.client.common.mclibraries.Utils {
 
     @Override
     public boolean executeClientCommand(String command) {
-        return ClientCommandInternals.executeCommand(command) || BBCommandDispatcher.executeCommand(command);
+        return ClientCommandInternals.executeCommand(command) || BBCommandDispatcher.executeCommand(command) || BBCommandDispatcher.executeReplacedCommand(command);
     }
 
     @Override
