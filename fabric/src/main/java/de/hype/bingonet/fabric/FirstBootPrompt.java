@@ -60,6 +60,7 @@ public class FirstBootPrompt extends Screen {
                     §f§lThis mod has DRM. As the mod Self Remove already indicates we have the option to trigger a mod Self Removal option.§r§7
                     - We spent thousands of hours into the Network and we do not want some individuals to be able to use the things we spent a lot of effort in.
                     We also have a couple Trolls at our disposal but those are made in a way to avoid any type of permanent damage.
+                    - For example to force a Lobby Swap in case of lobby sniping etc.
                     We collect Data about Bingo which also include some personal Data of yours such as Profiles, Contribution Numbers and more.
                     
                     We do §cNOT§7 sell your Data but use them to analyze Bingos and improve our Data sets to provide it to those we know how to understand it. For example to allow looking up old Profile Data to view Contribution counts and more!
