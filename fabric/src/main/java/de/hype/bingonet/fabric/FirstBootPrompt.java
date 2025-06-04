@@ -9,7 +9,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.gui.widget.ScrollableTextWidget;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.sound.SoundEvents;
@@ -83,7 +85,14 @@ public class FirstBootPrompt extends Screen {
             titleWidget.setY(padding);
 
             ScrollableTextWidget textWidget = new ScrollableTextWidget((width - textWidgetWidth) / 2, padding * 2 + titleWidget.getHeight(), textWidgetWidth, textWidgetHeight, Text.literal(notice), textRenderer);
-
+            CheckboxWidget useBBIntegration = CheckboxWidget.builder(Text.literal("Do you want to use our Bingo Brewers Integration?"), MinecraftClient.getInstance().textRenderer).checked(false).tooltip(
+                    Tooltip.of(Text.literal("The Bingo Brewers Integration makes Bingo Net connect to indigo_polecat's Bingo Brewer Mod Server. (bingobrewers.com). It is not subject to our own Privacy. We are not responsible for possible Network Bans."))
+            ).callback((checkbox, checked) -> {
+                BingoNet.generalConfig.useBingoBrewersIntegration = checked;
+                BingoNet.generalConfig.save();
+            }).build();
+            useBBIntegration.onPress();
+            useBBIntegration.setDimensionsAndPosition((width - textWidgetWidth) / 2, padding + titleWidget.getHeight(), textWidgetWidth, buttonHeight);
             //Color Coding against using it knowingly.
             ButtonWidget openDiscord = ButtonWidget.builder(Text.literal("§cOpen Discord in Browser"), (b) -> this.openDiscord())
                     .dimensions((width - buttonWidth) / 2, padding * 3 + titleWidget.getHeight() + textWidgetHeight, buttonWidth, buttonHeight)
@@ -103,6 +112,7 @@ public class FirstBootPrompt extends Screen {
 
             addDrawableChild(titleWidget);
             addDrawableChild(textWidget);
+            addDrawableChild(useBBIntegration);
             addDrawableChild(openDiscord);
             addDrawableChild(gitHubButton);
             addDrawableChild(openPrivacyPolicyInBrowser);
@@ -128,8 +138,7 @@ public class FirstBootPrompt extends Screen {
     private void selfRemove() {
         if (BBsentialConnection.selfDestruct()) {
             throw new RuntimeException("Mod was removed successfully. You can Relaunch (cause we cant for you)");
-        }
-        else {
+        } else {
             client.execute(() -> client.setScreen(new NoticeScreen(() -> {
                 throw new RuntimeException("Closing MC");
             }, Text.literal("BingoNet"), Text.literal("Sorry we weren't able to remove the mod for you. You will need to remove it yourself"))));
@@ -172,8 +181,7 @@ public class FirstBootPrompt extends Screen {
         if (BingoNet.connection.getAuthenticated() == Boolean.TRUE) {
             ((Utils) EnvironmentCore.utils).displayToast(new Utils.BBToast("Connected", "Authentication Successful. Continuing", SoundEvents.ENTITY_ARROW_HIT, VanillaItems.EMERALD_BLOCK, Color.GREEN));
             close();
-        }
-        else {
+        } else {
             ((Utils) EnvironmentCore.utils).displayToast(new Utils.BBToast("Connecting Failed", "You are not registered. Please register! (If you are registered try again. If still not working you probably have an ongoing Punishment.)", null, VanillaItems.REDSTONE_BLOCK, Color.RED));
         }
     }

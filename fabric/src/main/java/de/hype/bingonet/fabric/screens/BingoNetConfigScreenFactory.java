@@ -1,7 +1,5 @@
 package de.hype.bingonet.fabric.screens;
 
-import de.hype.bingonet.client.common.bingobrewers.BingoBrewersClient;
-import de.hype.bingonet.client.common.chat.Chat;
 import de.hype.bingonet.client.common.client.BingoNet;
 import de.hype.bingonet.client.common.config.ConfigManager;
 import de.hype.bingonet.shared.constants.Islands;
@@ -18,7 +16,6 @@ import me.shedaniel.math.Color;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-import java.io.IOException;
 import java.util.List;
 
 public class BingoNetConfigScreenFactory {
@@ -75,27 +72,10 @@ public class BingoNetConfigScreenFactory {
                     .setTooltip(Text.of("Override the Bingo Time and connect always to the Server. (Bingo time is 14 days cause Extreme Bingo)"))
                     .setSaveConsumer(newValue -> BingoNet.bbServerConfig.overrideBingoTime = newValue)
                     .build());
-            BooleanListEntry connectToBingoBrewers = entryBuilder.startBooleanToggle(Text.of("Use Bingo Brewers Integration"), BingoNet.generalConfig.useBingoBrewersIntegration)
-                    .setDefaultValue(false)
-                    .requireRestart()
-                    .setTooltip(Text.of("If Enabled Bingo Net will use an Internal Connection to connect your Client to the System by Bingo Brewers. For example to show Splashes.\n§4§lSUBJECT TO BINGO BREWERS PRIVACY POLICY"))
-                    .setSaveConsumer(newValue -> {
-                        BingoNet.generalConfig.useBingoBrewersIntegration = newValue;
-                        if (!newValue) BingoNet.bingoBrewersClient.stop();
-                        else {
-                            try {
-                                BingoNet.bingoBrewersClient = new BingoBrewersClient();
-                            } catch (IOException e) {
-                                Chat.sendPrivateMessageToSelfError("Error Trying to connect to Bingo Brewers. Please report this to BINGO NET!");
-                            }
-                        }
-                    })
-                    .build();
-            server.addEntry(connectToBingoBrewers);
         } // server
         ConfigCategory party = builder.getOrCreateCategory(Text.of("§6Party"));
         {
-            //TODO do the trusted party meMber command and menu
+            //TODO do the trusted party member command and menu
             party.addEntry(entryBuilder.startBooleanToggle(Text.of("Allow Server Partying"), BingoNet.partyConfig.allowServerPartyInvite)
                     .setDefaultValue(true)
                     .setTooltip(Text.of("Allow the Server to party players for you automatically. (Convenience Feature. Is used for example for services to automatically party the persons which joined it)"))
@@ -527,6 +507,30 @@ public class BingoNetConfigScreenFactory {
                     .setSaveConsumer(newValue -> BingoNet.socketAddonConfig.addonChatDebug = newValue)
                     .build());
         }//Socket Addons
+        ConfigCategory bbIntegration = builder.getOrCreateCategory(Text.of("Bingo Brewers"));
+        {
+            var base = entryBuilder.startBooleanToggle(Text.of("Use Integration"), BingoNet.generalConfig.useBingoBrewersIntegration)
+                    .setDefaultValue(false)
+                    .setTooltip(Text.of("Whether you want Bingo Net to use a integrated and self made Bingo Brewers Mod Implementation. Can be used to show splashes with the Bingo Net Functions. We are not responsible for possible Network Bans. Subject to their (indigo_polecat) non existent privacy policy."))
+                    .requireRestart()
+                    .setSaveConsumer(newValue -> BingoNet.generalConfig.useBingoBrewersIntegration = newValue)
+                    .build();
+            var baseRequirement = Requirement.isTrue(base);
+            bbIntegration.addEntry(base);
+            var showSplashes = entryBuilder.startBooleanToggle(Text.of("Show Splashes"), BingoNet.bingoBrewersIntegrationConfig.getShowSplashes())
+                    .setDefaultValue(true)
+                    .setTooltip(Text.of("Whether you want to see the Splashes from Bingo Brewers.\n§4DO NOT REPORT US HUB SWAP DETECTION NOT WORKING!§r: Indigo has a System that does not include the necessary data for us to use it."))
+                    .setSaveConsumer(newValue -> BingoNet.bingoBrewersIntegrationConfig.setShowSplashes(newValue))
+                    .setRequirement(baseRequirement)
+                    .build();
+            bbIntegration.addEntry(showSplashes);
+            bbIntegration.addEntry(entryBuilder.startBooleanToggle(Text.of("Show Party Warp Splashes"), BingoNet.bingoBrewersIntegrationConfig.getShowPartyWarpSplashes())
+                    .setDefaultValue(false)
+                    .setTooltip(Text.of("Whether you want to see Splashes that require a Party Warp."))
+                    .setSaveConsumer(newValue -> BingoNet.bingoBrewersIntegrationConfig.setShowPartyWarpSplashes(newValue))
+                    .setRequirement(Requirement.all(baseRequirement, Requirement.isTrue(showSplashes)))
+                    .build());
+        }
         if (BingoNet.generalConfig.hasBBRoles(BBRole.DEVELOPER)) {
             ConfigCategory dev = builder.getOrCreateCategory(Text.of("§3Developing"));
             dev.addEntry(entryBuilder.startBooleanToggle(Text.of("Dev Mode"), BingoNet.developerConfig.devMode)
