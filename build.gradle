@@ -11,7 +11,7 @@ repositories {
     maven { url = uri("https://maven.fabricmc.net") }
     maven { url = uri("https://maven.minecraftforge.net/") }
     maven { url = uri("https://repo.spongepowered.org/maven/") }
-    maven { url = uri("https://repo.sk1er.club/repository/maven-releases/") }
+//    maven { url = uri("https://repo.sk1er.club/repository/maven-releases/") }
     maven { url = uri("https://maven.wagyourtail.xyz/releases") }
     maven { url = uri("https://maven.wagyourtail.xyz/snapshots") }
     maven { url = uri("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1") }
@@ -26,4 +26,19 @@ dependencies {
 }
 kotlin {
     jvmToolchain(8)
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'kotlin'
+
+    sourceSets {
+        main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
+    }
+
+    compileKotlin {
+        source(project(":common").sourceSets.main.allSource)
+        inputs.file "../gradle.properties"
+    }
 }
