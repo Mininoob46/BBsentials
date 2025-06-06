@@ -207,6 +207,11 @@ public class BingoBrewersPackets {
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
         public Long lastReceivedDayInfo = Long.MAX_VALUE;
+
+        @Override
+        public void execute(receiveCHItems packet, Client client) {
+
+        }
     }
 
     public static class ChestInfo {
