@@ -50,6 +50,7 @@ public class BingoNet {
     public static Thread debugThread;
     //General Config needs to be first config!
     public static GeneralConfig generalConfig = new GeneralConfig();
+    public static BingoBrewersIntegrationConfig bingoBrewersIntegrationConfig = new BingoBrewersIntegrationConfig();
     public static BingoBrewersClient bingoBrewersClient;
     //All Other Configs
     public static DeveloperConfig developerConfig = new DeveloperConfig();

@@ -10,6 +10,7 @@ import de.hype.bingonet.client.common.config.PartyManager;
 import de.hype.bingonet.shared.constants.Formatting;
 import de.hype.bingonet.shared.constants.Islands;
 import de.hype.bingonet.shared.constants.StatusConstants;
+import de.hype.bingonet.shared.objects.ChChestData;
 import de.hype.bingonet.shared.objects.Message;
 import de.hype.bingonet.shared.objects.SplashData;
 import de.hype.bingonet.shared.objects.SplashLocation;
@@ -89,7 +90,9 @@ public class BingoBrewersPackets {
         @Override
         public void execute(SplashNotification packet, Client client) {
             try {
+                if (!BingoNet.bingoBrewersIntegrationConfig.getShowSplashes()) return;
                 if ((message == null || message.equals("0")) && partyHost != null && !partyHost.equals("No Party")) {
+                    if (!BingoNet.bingoBrewersIntegrationConfig.getShowPartyWarpSplashes()) return;
                     String json = "[{\"text\":\"\"},{\"text\":\"@splasher \",\"color\":\"light_purple\"},{\"text\":\"is splashing in a Private Server. \"},{\"text\":\"Press (\"},{\"keybind\":\"Chat Prompt Yes / Open Menu\",\"color\":\"green\"},{\"text\":\") to join their Party. \"},{\"text\":\"Location: \"},{\"text\":\"@location \",\"color\":\"green\"},{\"text\":\"|\"},{\"text\":\" @extramessage\",\"color\":\"gold\"}]";
                     json = json.replace("@splasher", "%sBingo Brewers(%s%s%s)".formatted(Formatting.LIGHT_PURPLE.getMCCode(), Formatting.GOLD.getMCCode(), splasher, Formatting.LIGHT_PURPLE.getMCCode()));
                     json = json.replace("@location", location);
@@ -122,6 +125,9 @@ public class BingoBrewersPackets {
                 String extraMessage = note != null ? String.join("\n", note) : "";
                 SplashData.HubSelectorData hubSelectorData = null;
                 Islands island = dungeonHub ? Islands.DUNGEON_HUB : Islands.HUB;
+                if (dungeonHub && extraMessage.toLowerCase().contains("sand")) {
+                    splashLocation = new SplashLocation(location, -60, 121, -20);
+                }
                 if (hubNumber != null) {
                     hubSelectorData = new SplashData.HubSelectorData(hubNumber, island);
                 } else if (serverId != null) {
@@ -196,7 +202,7 @@ public class BingoBrewersPackets {
         public boolean unsubscribe;
     }
 
-    public static class receiveCHItems {
+    public static class receiveCHItems extends BingoBrewersPacket<receiveCHItems> {
         public ArrayList<ChestInfo> chestMap;
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
