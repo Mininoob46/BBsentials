@@ -1,39 +1,76 @@
 package de.hype.bingonet.shared.objects.minions
 
-import kotlin.math.max
+import de.hype.bingonet.shared.compilation.extensionutils.modifyValues
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionCategory
 
 enum class Fueles(
-    val boostMultiplier: Int,
-    val boostPercentage: Int,
     val durationMinutes: Int,
-    val isBingoObtainable: Boolean
+    val isBingoObtainable: Boolean = true,
+    private val builder: (AppliedMinionData) -> Unit
 ) {
-    COAL(5, 0, 30),
-    CHARCOAL(5, 0, 30),
-    BLOCK_OF_COAL(5, 0, 5 * 60),
-    ENCHANTED_COAL(10, 0, 24 * 60),
-    ENCHANTED_CHAR_COAL(20, 0, 36 * 60),
-    HAMSTER_WHEEL(50, 0, 24 * 60),
-    FOUL_FLESH(90, 0, 5 * 60),
-    ENCHANTED_BREAD(5, 0, 12 * 60),
-    CATALYST(0, 3, 3 * 60),
-    HYPER_CATALYST(0, 4, 6 * 60, false),
-    TASTY_CHESSE(0, 2, 1 * 60),
-    SOLAR_PANEL(25, 0, -1, false),
-    ENCHANTED_LAVA_BUCKET(25, 0, -1),
-    MAGMA_BUCKET(30, 0, -1, false),
-    PLASMA_BUCKET(35, 0, -1, false),
-    EVER_BURNING_FLAME(35, 0, -1, false);
+    COAL(30, builder = {
+        it.minionData.timeBetweenActions *= 0.95
+    }),
+    CHARCOAL(30, builder = {
+        it.minionData.timeBetweenActions *= 0.95
+    }),
+    BLOCK_OF_COAL(5 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.95
+    }),
+    ENCHANTED_COAL(24 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.90
+    }),
+    ENCHANTED_CHAR_COAL(36 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.80
+    }),
+    HAMSTER_WHEEL(24 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.5
+    }),
+    FOUL_FLESH(5 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.1
+    }),
+    ENCHANTED_BREAD(12 * 60, builder = {
+        it.minionData.timeBetweenActions *= 0.95
+    }),
+    CATALYST(3 * 60, builder = {
+        multiplyDrops(it, 3.0)
+    }),
+    HYPER_CATALYST(6 * 60, false, builder = {
+        multiplyDrops(it, 4.0)
+    }),
+    TASTY_CHESSE(1 * 60, builder = {
+        multiplyDrops(it, 2.0)
+    }),
+    SOLAR_PANEL(-1, false, builder = {
+        it.minionData.timeBetweenActions *= 0.75
+    }),
+    ENCHANTED_LAVA_BUCKET(-1, builder = {
+        it.minionData.timeBetweenActions *= 0.75
+    }),
+    MAGMA_BUCKET(-1, false, builder = {
+        it.minionData.timeBetweenActions *= 0.70
+    }),
+    PLASMA_BUCKET(-1, false, builder = {
+        it.minionData.timeBetweenActions *= 0.65
+    }),
+    EVER_BURNING_FLAME(-1, false, builder = {
+        if (it.category == MinionCategory.COMBAT) {
+            it.minionData.timeBetweenActions *= 0.60
+        } else {
+            it.minionData.timeBetweenActions *= 0.65
+        }
+    });
 
-    constructor(boostPercentage: Int, boostMultiplier: Int, durationMinutes: Int) : this(
-        boostMultiplier,
-        boostPercentage,
-        durationMinutes,
-        false
-    )
+    companion object {
+        fun multiplyDrops(minionData: AppliedMinionData, multiplier: Double) {
+            minionData.drops.modifyValues { drop ->
+                return@modifyValues drop.value * multiplier
+            }
+        }
+    }
 
-    fun getBoostMultiplierMax(): Int {
-        return max(boostMultiplier, 1)
+    fun applyToMinion(minionData: AppliedMinionData) {
+        builder.invoke(minionData)
     }
 }
 

@@ -121,4 +121,22 @@ object FormattingUtils {
         if (secs != 0) sb.append(secs).append("s")
         return String.format(prefix, sb.toString())
     }
+
+    @JvmStatic
+    fun formatTime(src: kotlin.time.Duration): String {
+        if (src.isInfinite()) return "Never"
+        val seconds = src.inWholeSeconds
+        if (seconds == 0L) return "now"
+        val prefix = if (seconds > 0) "in %s" else "%s ago"
+        val days = (seconds / 86400).toInt()
+        val hours = ((seconds % 86400) / 3600).toInt()
+        val minutes = ((seconds % 3600) / 60).toInt()
+        val secs = (seconds % 60).toInt()
+        val sb = StringBuilder()
+        if (days != 0) sb.append(days).append("d ")
+        if (hours != 0) sb.append(hours).append("h ")
+        if (minutes != 0) sb.append(minutes).append("m ")
+        if (secs != 0) sb.append(secs).append("s")
+        return String.format(prefix, sb.toString())
+    }
 }
