@@ -6,6 +6,10 @@ import de.hype.bingonet.client.common.chat.Chat;
 import de.hype.bingonet.client.common.client.BingoNet;
 import de.hype.bingonet.client.common.client.SplashManager;
 import de.hype.bingonet.fabric.ModInitialiser;
+import de.hype.bingonet.shared.compilation.sbenums.NeuExtensionUtilsKt;
+import de.hype.bingonet.shared.compilation.sbenums.NeuRepoManager;
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionData;
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionRepoManager;
 import de.hype.bingonet.shared.constants.Collections;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.gui.screen.Screen;
@@ -21,6 +25,7 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.ClickType;
 import org.apache.commons.text.WordUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -109,13 +114,12 @@ public abstract class InventoryKeyBinds<T extends ScreenHandler> extends Screen 
                         NbtCompound data = customData.copyNbt();
                         String id = data.getString("id");
                         BingoNet.executionService.execute(() -> {
-                            for (Collections value : Collections.values()) {
-                                if (value.getId().equalsIgnoreCase(id)) {
-                                    String minionId = value.getMinionID();
-                                    if (minionId != null) {
-                                        BingoNet.sender.addSendTask("/viewrecipe %s".formatted(minionId), 0);
-                                        return;
-                                    }
+                            for (List<@NotNull MinionData> value : MinionRepoManager.INSTANCE.getTypeMappedMinions().values()) {
+                                var minionItem = NeuRepoManager.INSTANCE.getItems().get(value.getFirst().getItemId());
+                                var result = NeuExtensionUtilsKt.groupByItemId(minionItem.getRecipes().getFirst());
+                                if (result.keySet().stream().anyMatch(it -> it.getSkyblockItemId().equals(id))) {
+                                    BingoNet.sender.addSendTask("/viewrecipe %s".formatted(minionItem.getSkyblockItemId().replace("-", ":")), 0);
+                                    return;
                                 }
                             }
                         });
