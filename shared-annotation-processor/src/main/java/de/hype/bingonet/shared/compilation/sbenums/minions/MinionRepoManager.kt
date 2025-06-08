@@ -3,6 +3,7 @@ package de.hype.bingonet.shared.compilation.sbenums.minions
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
+import de.hype.bingonet.shared.compilation.Main.PROJECT_DIR
 import de.hype.bingonet.shared.compilation.sbenums.NeuRepoManager
 import de.hype.bingonet.shared.compilation.sbenums.getAsIngredient
 import de.hype.bingonet.shared.compilation.sbenums.groupByItemId
@@ -155,7 +156,7 @@ fun main() {
             .joinToString { it.skyblockItemId }
     }
     val gson = GsonBuilder().setPrettyPrinting().create()
-    val itemsDir = File("/home/spieler/IdeaProjects/BingoNet-Server/neu-repo/items")
+    val itemsDir = File(PROJECT_DIR, "neu-repo/items")
 
     results.forEach { (itemId, pair) ->
         val file = File(itemsDir, "$itemId.json")
