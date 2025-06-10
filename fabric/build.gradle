@@ -104,6 +104,7 @@ loom {
 
 tasks.withType(JavaCompile) {
     source(project(":common").sourceSets.main.allSource)
+    source(project(":shared-annotation-processor").sourceSets.main.allSource)
     options.encoding = "UTF-8"
 }
 sourceSets {

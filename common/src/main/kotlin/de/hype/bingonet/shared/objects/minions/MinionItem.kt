@@ -1,134 +1,115 @@
 package de.hype.bingonet.shared.objects.minions
 
-import de.hype.bingonet.shared.constants.Collections
-import de.hype.bingonet.shared.constants.Collections.Foraging
-import de.hype.bingonet.shared.constants.MinionResourceItem
+import de.hype.bingonet.shared.compilation.extensionutils.modifyKeys
+import de.hype.bingonet.shared.compilation.extensionutils.modifyValues
+import de.hype.bingonet.shared.compilation.sbenums.NeuRepoManager
+import de.hype.bingonet.shared.compilation.sbenums.SkyblockItems
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionCategory
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionTypes
+import io.github.moulberry.repo.data.NEUItem
 
-enum class MinionItem(var bingoObtainable: Boolean, var displayName: String) {
-    AUTO_SMELTER("Auto Smelter") {
-        override fun convertItem(item: MinionResourceItem): MinionResourceItem {
-            if (item is Foraging) return Collections.Mining.Coal
-            return super.convertItem(item)
-        }
-    },
-    COMPACTOR("Compactor"),
-    SUPER_COMPACTOR_3000("Super Compactor 3000"),
-    DWARFEN_SUPER_COMPACTOR("Dwarfen Super Compactor") {
-        override fun convertItem(item: MinionResourceItem): MinionResourceItem {
-            return AUTO_SMELTER.convertItem(item)
-        }
-    },
-    DIAMOND_SPREADING("Diamond Spreading") {
-        override fun modifyDrops(sum: Double, generated: MutableMap<MinionResourceItem, Double>) {
-            generated.put(
-                Collections.Mining.Diamond,
-                generated.getOrDefault(Collections.Mining.Diamond, 0.0) + (sum / 10)
-            )
-        }
-    },
-    POTATO_SPREADING(false, "Potato Spreading") {
-        override fun modifyDrops(sum: Double, generated: MutableMap<MinionResourceItem, Double>) {
-            generated.put(
-                Collections.Farming.Potato,
-                generated.getOrDefault(Collections.Farming.Potato, 0.0) + (sum / 20)
-            )
-        }
-    },
-    MINION_EXPANDER("Minion Expander") {
-        override fun getMinionSpeedAdditive(minion: Minions): Int {
-            return 5
-        }
-    },
-    ENCHANTED_EGG("Enchanted Egg"),
-    FLINT_SHOVEL("Flint Shovel"),
-    FLYCATCHER(false, "Flycatcher") {
-        override fun getMinionSpeedAdditive(minion: Minions): Int {
-            return 20
-        }
-    },
-    KRAMPUS_HELMET(false, "Krampus Helmet") {
-        override fun modifyDrops(sum: Double, generated: MutableMap<MinionResourceItem, Double>) {
-            generated.put(
-                MinionResourceItem.UnusedMinionItems.RED_GIFT,
-                generated.getOrDefault(MinionResourceItem.UnusedMinionItems.RED_GIFT, 0.0) + (sum * 0.000045)
-            )
-        }
-    },
-    LESSER_SOULFLOW_ENGINE("Lesser Soulflow Engine") {
-        override fun items(
-            dropsGenerated: MutableMap<MinionResourceItem, Int>,
-            minionActions: Int,
-            minion: Minions
-        ): MutableMap<MinionResourceItem, Int> {
-            for (collectionsIntegerEntry in dropsGenerated.entries) {
-                dropsGenerated.put(collectionsIntegerEntry.key, collectionsIntegerEntry.value / 2)
+enum class MinionItem(
+    var displayName: String,
+    private val modifier: (AppliedMinionData) -> Unit,
+    var bingoObtainable: Boolean = true
+) {
+    AUTO_SMELTER("Auto Smelter", modifier = {
+        it.drops.modifyKeys {
+            if (it.key.skyblockItemId.startsWith("LOG")) {
+                return@modifyKeys NeuRepoManager.items["COAL"]!!
             }
-            return dropsGenerated
+            if (it.key.skyblockItemId.startsWith("CACTUS")) {
+                return@modifyKeys NeuRepoManager.items["GREEN_DYE"]!!
+            }
+            return@modifyKeys it.key
+        }
+        it.smelter = true
+    }),
+    COMPACTOR("Compactor", modifier = {
+        it.compactor = true
+    }),
+    SUPER_COMPACTOR_3000("Super Compactor 3000", modifier = {
+        it.sc3000 = true
+    }),
+    DWARFEN_SUPER_COMPACTOR("Dwarfen Super Compactor", modifier = {
+        it.sc3000 = true
+        it.smelter = true
+    }),
+    DIAMOND_SPREADING("Diamond Spreading", modifier = {
+        val sum = it.drops.values.sum()
+        SkyblockItems.Diamond
+        it.addDrop(SkyblockItems.Diamond, (sum * 0.1))
+    }),
+    POTATO_SPREADING("Potato Spreading", modifier = {
+        val sum = it.drops.values.sum()
+        it.addDrop(SkyblockItems.Potato, (sum * 0.2))
+    }, false),
+    MINION_EXPANDER("Minion Expander", modifier = {
+        it.minionData.timeBetweenActions *= 0.95
+    }),
+    ENCHANTED_EGG("Enchanted Egg", modifier = {
+        it.addDrop(SkyblockItems.Egg, 1.0)
+    }) {
+        override fun canBeUsedInMinion(minion: AppliedMinionData): Boolean {
+            return minion.isType(MinionTypes.CHICKEN_GENERATOR)
         }
     },
-    SOULFLOW_ENGINE("Soulflow Engine") {
-        override fun getMultiplier(minion: Minions): Double {
-            return 0.5
+    FLINT_SHOVEL("Flint Shovel", modifier = {
+        it.drops.mapKeys { if (it.key.equals("GRAVEL")) return@mapKeys "FLINT" else it.key }
+    }) {
+        override fun canBeUsedInMinion(minion: AppliedMinionData): Boolean {
+            return minion.isType(MinionTypes.GRAVEL_GENERATOR)
         }
     },
-    CORRUPT_SOIL("Corrupt Soil") {
-        override fun items(
-            dropsGenerated: MutableMap<MinionResourceItem, Int>,
-            minionActions: Int,
-            minion: Minions
-        ): MutableMap<MinionResourceItem, Int> {
-            if (minion.spawnsMobs()) dropsGenerated.put(Collections.Mining.Sulphur, minionActions)
-            return dropsGenerated
+    FLYCATCHER("Flycatcher", modifier = {
+        it.minionData.timeBetweenActions *= 0.8
+    }, false),
+    KRAMPUS_HELMET("Krampus Helmet", modifier = {
+        val sum = it.drops.values.sum()
+        it.addDrop(SkyblockItems.Red_Gift, (sum * 0.000045))
+    }, false),
+    LESSER_SOULFLOW_ENGINE("Lesser Soulflow Engine", modifier = {
+        it.drops.modifyValues { entry ->
+            return@modifyValues entry.value / 2
         }
-    },
-    ENCHANTED_SHEARS("Enchanted Shears"),
-    BERBERIES_FUEL_INJECTOR("Berberis Fuel Injector") {
-        override fun getMinionSpeedAdditive(minion: Minions): Int {
-            if (minion.getType() == MinionType.FARMING) return 15
-            return 0
+    }),
+    SOULFLOW_ENGINE("Soulflow Engine", modifier = {
+        it.drops.forEach { entry ->
+            it.drops.put(entry.key, entry.value / 2)
         }
-    },
-    SLEEPY_HOLLOW(false, "Sleepy Hollow") {
-        override fun items(
-            dropsGenerated: MutableMap<MinionResourceItem, Int>,
-            minionActions: Int,
-            minion: Minions
-        ): MutableMap<MinionResourceItem, Int> {
-            //dropsGenerated.put(PURPLE_CANY,(int) dropsGenerated.values().mapToInt(v->v).sum()*0.00015);
-            return dropsGenerated
+        if (it.isType(MinionTypes.VOIDLING_GENERATOR)) {
+            it.minionData.timeBetweenActions *= (1 - (0.3 * it.minionData.tier))
         }
-    };
+    }),
+    CORRUPT_SOIL("Corrupt Soil", modifier = {
+        it.addDrop(SkyblockItems.Corrupted_Fragment, 1.0)
+        it.addDrop(SkyblockItems.Sulphur, 1.0)
+    }),
+    BERBERIES_FUEL_INJECTOR("Berberis Fuel Injector", modifier = {
+        if (it.category == MinionCategory.FARMING) {
+            it.minionData.timeBetweenActions *= 0.85
+        }
+    }),
+    SLEEPY_HOLLOW("Sleepy Hollow", modifier = {
+        val sum = it.drops.values.sum()
+        it.addDrop(SkyblockItems.Purple_Candy, (sum * 0.00015))
+    }, false);
 
-
-    constructor(name: String) : this(true, name)
-
-    open fun getMinionSpeedAdditive(minion: Minions): Int {
-        return 0
+    open fun canBeUsedInMinion(minion: AppliedMinionData): Boolean {
+        return true
     }
 
-    open fun items(
-        dropsGenerated: MutableMap<MinionResourceItem, Int>,
-        minionActions: Int,
-        minion: Minions
-    ): MutableMap<MinionResourceItem, Int> {
-        return dropsGenerated
-    }
-
-    fun applyCompacting(
-        drops: MutableMap<MinionResourceItem, Int>,
-        minion: Minions
-    ): MutableMap<MinionResourceItem, Int> {
-        return drops
+    fun applyToMinion(minionData: AppliedMinionData) {
+        if (canBeUsedInMinion(minionData)) {
+            modifier(minionData)
+        }
     }
 
 
-    open fun convertItem(item: MinionResourceItem): MinionResourceItem {
-        return item
-    }
+}
 
-    open fun getMultiplier(minion: Minions): Double {
-        return 1.0
+private fun AppliedMinionData.addDrop(item: NEUItem, amount: Double) {
+    this.drops.compute(item) { _, v ->
+        return@compute (v ?: 0.0) + amount
     }
-
-    open fun modifyDrops(sum: Double, generated: MutableMap<MinionResourceItem, Double>) {}
 }

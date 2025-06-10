@@ -14,13 +14,14 @@ import de.hype.bingonet.fabric.tutorial.AbstractTutorialNode;
 import de.hype.bingonet.fabric.tutorial.Tutorial;
 import de.hype.bingonet.fabric.tutorial.TutorialManager;
 import de.hype.bingonet.fabric.tutorial.nodes.CoordinateNode;
+import de.hype.bingonet.shared.compilation.sbenums.minions.Minion;
+import de.hype.bingonet.shared.compilation.sbenums.minions.MinionRepoManager;
 import de.hype.bingonet.shared.constants.ChChestItem;
 import de.hype.bingonet.shared.constants.Islands;
 import de.hype.bingonet.shared.constants.VanillaItems;
 import de.hype.bingonet.shared.objects.ChChestData;
 import de.hype.bingonet.shared.objects.Position;
 import de.hype.bingonet.shared.objects.WaypointData;
-import de.hype.bingonet.shared.objects.minions.Minions;
 import de.hype.bingonet.shared.packets.function.MinionDataResponse;
 import kotlin.Unit;
 import net.fabricmc.fabric.impl.command.client.ClientCommandInternals;
@@ -61,9 +62,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.awt.*;
 import java.io.ByteArrayInputStream;
@@ -210,7 +209,7 @@ public class Utils implements de.hype.bingonet.client.common.mclibraries.Utils {
 
     @Override
     public MinionDataResponse getMiniondata() {
-        Map<Minions, Integer> minions = new HashMap<>();
+        Map<Minion, Integer> minions = new HashMap<>();
         if (getCurrentIsland() != Islands.PRIVATE_ISLAND) throw new IllegalStateException("Not in private island!");
         List<PlayerListEntry> tabList = new ArrayList<>(MinecraftClient.getInstance().getNetworkHandler().getPlayerList());
         boolean inMinionData = false;
@@ -227,7 +226,7 @@ public class Utils implements de.hype.bingonet.client.common.mclibraries.Utils {
                 int count = Integer.parseInt(arguments[0].replaceAll("\\D+", ""));
                 String type = String.join(" ", Arrays.stream(arguments).toList().subList(1, arguments.length - 2));
                 String tier = arguments[arguments.length - 3];
-                minions.put(Minions.getMinionFromString(type, tier), count);
+                minions.put(MinionRepoManager.INSTANCE.getMinionFromString(type, tier), count);
             } catch (Exception e) {
                 return new MinionDataResponse(minions, slots);
             }

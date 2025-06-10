@@ -2,6 +2,8 @@ plugins {
     id 'multiloader-common'
     id 'org.spongepowered.gradle.vanilla' version '0.2.1-SNAPSHOT'
     id 'org.jetbrains.kotlin.jvm'
+    id("com.google.devtools.ksp") version "latest.release"
+
 }
 
 minecraft {
@@ -33,27 +35,30 @@ repositories {
 dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
     //Basic Dependencies
-    implementation(libs.apache.httpclient)
-    implementation(libs.gson)
-    implementation(libs.guava)
-    implementation(libs.commonsLang)
-    implementation(libs.commonsText)
-    implementation(libs.kotlinStdlib)
-    implementation(libs.reflection)
-    implementation(libs.kyronet)
+    api(libs.apache.httpclient)
+    api(libs.gson)
+    api(libs.guava)
+    api(libs.commonsLang)
+    api(libs.commonsText)
+    api(libs.kotlinStdlib)
+    api(libs.reflection)
+    api(libs.kyronet)
 
     //Hypixel Related Dependencies
-    implementation(libs.hypixelModApi) // Offical Hypixel Mod API
-    implementation(libs.neditNBT) //NBT Parser
-    implementation(libs.neurepoparser) //Neu REPO Manager
-    implementation(libs.git)
+    api(libs.hypixelModApi) // Offical Hypixel Mod API
+    api(libs.neditNBT) //NBT Parser
+    api(libs.neurepoparser) //Neu REPO Manager
+    api(libs.git)
 
     //Discord Related Dependencies
-    implementation(libs.discordJDA)
-    implementation(libs.discordGameSDK)
+    api(libs.discordJDA)
+    api(libs.discordGameSDK)
 
     //Other Dependencies
-    implementation(libs.javazoom)
+    api(libs.javazoom)
+    api(project(":shared-annotation-processor"))
+    ksp(project(":shared-annotation-processor"))
+    api("com.google.devtools.ksp:symbol-processing-api:latest.release")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -74,3 +79,9 @@ artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
+
+// disable all KAPT tasks (kaptKotlin etc.) as only KSP is used
+gradle.projectsEvaluated {
+    tasks.matching { it.name.toLowerCase().contains('kapt') }.configureEach { it.enabled = false }
+}
+
