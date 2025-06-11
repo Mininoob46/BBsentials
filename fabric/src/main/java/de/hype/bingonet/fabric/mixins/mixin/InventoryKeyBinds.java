@@ -119,7 +119,6 @@ public abstract class InventoryKeyBinds<T extends ScreenHandler> extends Screen 
                                 var result = NeuExtensionUtilsKt.groupByItemId(minionItem.getRecipes().getFirst());
                                 if (result.keySet().stream().anyMatch(it -> it.getSkyblockItemId().equals(id))) {
                                     BingoNet.sender.addSendTask("/viewrecipe %s".formatted(minionItem.getSkyblockItemId().replace("-", ":")), 0);
-                                    return;
                                 }
                             }
                         });
